@@ -1,0 +1,316 @@
+/* Theme presets — Elosar (default), Slate Mono and Asencia Medical.
+   Every preset shares Elosar's shell: light sidebar, selected navigation rail,
+   editorial headings and the same geometry. Only palette tokens vary. */
+
+/* ── Elosar ──────────────────────────────────────────────────────────── */
+[data-preset='serene'][data-theme='light'],
+:root:not([data-preset]) {
+  color-scheme: light;
+}
+
+[data-preset='serene'][data-theme='dark'],
+:root:not([data-preset])[data-theme='dark'],
+[data-theme='dark']:not([data-preset]) {
+  --accent: #9baeff;
+  --accent-600: #7e94f4;
+  --accent-700: #bdc9ff;
+  --accent-soft: rgba(155, 174, 255, .15);
+  --accent-grad: linear-gradient(135deg, #9baeff, #526cc8);
+  --bg: #10162a;
+  --surface: #19223b;
+  --surface-2: #222e4b;
+  --border: #576ea5;
+  --border-control: #6c80ad;
+  --border-strong: #8a99b9;
+  --divider: #303d5b;
+  --text: #f0f3ff;
+  --text-2: #c3cce5;
+  --text-3: #909dbb;
+  --green: #82cfa5;
+  --green-soft: #15291e;
+  --amber: #dfb56b;
+  --amber-soft: #2b2110;
+  --red: #ffb4ab;
+  --red-soft: #2c1414;
+  --blue: #97bce8;
+  --blue-soft: #16222f;
+  --violet: #bcaaf0;
+  --violet-soft: #211c31;
+  --frame: #0c1122;
+  --side-bg: #10172b;
+  --side-bg-2: #1a2644;
+  --side-text: #c7d0ea;
+  --side-text-2: #8998b9;
+  --side-active-bg: #455eb6;
+  --side-active-rail: #bdc9ff;
+  --side-strong: #f3f5ff;
+  --side-border: #293754;
+  --on-accent: #111a36;
+  --on-side-active: #f7f9ff;
+  --shadow: 0 6px 22px rgba(0, 0, 0, .4);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+
+/* Elosar's editorial voice is shared by every retained palette — on page
+   titles, dialogs and documents. Card titles left it on 2026-10-11: inside a
+   page they are section labels, set small in the accent like the atención. */
+[data-preset] .app .page-head h1,
+[data-preset] .app .modal-head h3,
+[data-preset] .app .doc-head h2,
+[data-preset] .app .pr-head h1,
+[data-preset] .app .ob-head h2,
+[data-preset] .app .section-line h2,
+[data-preset] .app .tl-card .what {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* ── Slate Mono ───────────────────────────────────────────────────────── */
+[data-preset='slate'][data-theme='light'] {
+  --accent: #171c1f;
+  --accent-600: #3f465c;
+  --accent-700: #131b2e;
+  --accent-soft: #eaeef2;
+  --accent-grad: linear-gradient(135deg, #565e74, #131b2e);
+  --bg: #eaeef2;
+  --surface: #ffffff;
+  --surface-2: #f0f4f8;
+  --border: #90909d;
+  --border-control: #7a7f8e;
+  --border-strong: #68696e;
+  --divider: #c6c6cd;
+  --text: #171c1f;
+  --text-2: #45464d;
+  --text-3: #76777d;
+  --green: #505f76;
+  --green-soft: #d0e1fb;
+  --amber: #98805d;
+  --amber-soft: #fcdeb5;
+  --red: #ba1a1a;
+  --red-soft: #ffdad6;
+  --blue: #505f76;
+  --blue-soft: #d0e1fb;
+  --violet: #565e74;
+  --violet-soft: #dae2fd;
+  --frame: #f6fafe;
+  --side-bg: #f6fafe;
+  --side-bg-2: #f0f4f8;
+  --side-text: #45464d;
+  --side-text-2: #76777d;
+  --side-active-bg: #eaeef2;
+  --side-active-rail: #3f465c;
+  --side-strong: #171c1f;
+  --side-border: #c6c6cd;
+  --on-side-active: #101214;
+  --shadow-sm: 0 1px 2px rgba(23, 28, 31, .06);
+  --shadow: 0 4px 20px rgba(23, 28, 31, .08);
+  --shadow-lg: 0 12px 36px rgba(23, 28, 31, .12);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  color-scheme: light;
+}
+
+[data-preset='slate'][data-theme='dark'] {
+  --accent: #bec6e0;
+  --accent-600: #dae2fd;
+  --accent-700: #edf1f5;
+  --accent-soft: rgba(190, 198, 224, .12);
+  --accent-grad: linear-gradient(135deg, #565e74, #3f465c);
+  --bg: #171c1f;
+  --surface: #1e2226;
+  --surface-2: #2c3134;
+  --border: #6d6e79;
+  --border-control: #7c7f89;
+  --border-strong: #8f97ac;
+  --divider: #45464d;
+  --text: #edf1f5;
+  --text-2: #bec6e0;
+  --text-3: #7c839b;
+  --green: #7c839b;
+  --green-soft: #1a2430;
+  --amber: #c5ab80;
+  --amber-soft: #271901;
+  --red: #ffb4ab;
+  --red-soft: #2c1417;
+  --blue: #bec6e0;
+  --blue-soft: #131b2e;
+  --violet: #7c839b;
+  --violet-soft: #1a2430;
+  --frame: #101214;
+  --side-bg: #101214;
+  --side-bg-2: #2c3134;
+  --side-text: #bec6e0;
+  --side-text-2: #7c839b;
+  --side-active-bg: #565e74;
+  --side-active-rail: #edf1f5;
+  --side-strong: #edf1f5;
+  --side-border: #45464d;
+  --on-accent: #171c1f;
+  --on-side-active: #edf1f5;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .25);
+  --shadow: 0 6px 22px rgba(0, 0, 0, .35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, .45);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  color-scheme: dark;
+}
+
+/* ── Asencia Medical ──────────────────────────────────────────────────── */
+[data-preset='asencia'][data-theme='light'] {
+  --accent: #45b4a2;
+  --accent-600: #3a9a8a;
+  --accent-700: #2d8678;
+  --accent-soft: #cbe8e2;
+  --accent-grad: linear-gradient(135deg, #5fc4b4, #45b4a2);
+  --bg: #e6eef2;
+  --surface: #ffffff;
+  --surface-2: #f5f6f7;
+  --border: #6e9baf;
+  --border-control: #5c8597;
+  --border-strong: #4e6d7d;
+  --divider: #d2e0e6;
+  --text: #1b2c49;
+  --text-2: #2c4165;
+  --text-3: #6b7280;
+  --green: #45b4a2;
+  --green-soft: #cbe8e2;
+  --amber: #d4845a;
+  --amber-soft: #ffe8da;
+  --red: #ba1a1a;
+  --red-soft: #ffdad6;
+  --blue: #2c4165;
+  --blue-soft: #e6eef2;
+  --violet: #24417c;
+  --violet-soft: #dcefe9;
+  --frame: #f5f6f7;
+  --side-bg: #f5f6f7;
+  --side-bg-2: #e6eef2;
+  --side-text: #2c4165;
+  --side-text-2: #6b7280;
+  --side-active-bg: #cbe8e2;
+  --side-active-rail: #3a9a8a;
+  --side-strong: #1b2c49;
+  --side-border: #d2e0e6;
+  --on-accent: #1b2c49;
+  --on-side-active: #1b2c49;
+  --shadow-sm: 0 1px 2px rgba(27, 44, 73, .06);
+  --shadow: 0 4px 20px rgba(27, 44, 73, .08);
+  --shadow-lg: 0 12px 36px rgba(27, 44, 73, .12);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  color-scheme: light;
+}
+
+[data-preset='asencia'][data-theme='dark'] {
+  --accent: #5fc4b4;
+  --accent-600: #45b4a2;
+  --accent-700: #cbe8e2;
+  --accent-soft: rgba(69, 180, 162, .14);
+  --accent-grad: linear-gradient(135deg, #5fc4b4, #45b4a2);
+  --bg: #121a28;
+  --surface: #1b2c49;
+  --surface-2: #243552;
+  --border: #5075b3;
+  --border-control: #6a8cb6;
+  --border-strong: #8da4c8;
+  --divider: #2c4165;
+  --text: #e6eef2;
+  --text-2: #cbe8e2;
+  --text-3: #8ca0b8;
+  --green: #5fc4b4;
+  --green-soft: rgba(69, 180, 162, .14);
+  --amber: #ffe8da;
+  --amber-soft: rgba(255, 232, 218, .12);
+  --red: #ffb4ab;
+  --red-soft: rgba(255, 180, 171, .14);
+  --blue: #8aa8c8;
+  --blue-soft: rgba(44, 65, 101, .45);
+  --violet: #a8b8d8;
+  --violet-soft: rgba(36, 65, 124, .35);
+  --frame: #0a1526;
+  --side-bg: #0a1526;
+  --side-bg-2: #1b2c49;
+  --side-text: #cbe8e2;
+  --side-text-2: #8ca0b8;
+  --side-active-bg: #45b4a2;
+  --side-active-rail: #cbe8e2;
+  --side-strong: #e6eef2;
+  --side-border: #2c4165;
+  --on-accent: #1b2c49;
+  --on-side-active: #1b2c49;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .25);
+  --shadow: 0 6px 22px rgba(0, 0, 0, .35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, .45);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  color-scheme: dark;
+}
+
+/* Theme-card preview tokens follow the live tokens above. */
+.theme-card[data-preview-preset='serene'][data-preview-mode='light'] {
+  --preview-side: #f7f9fd;
+  --preview-active: #e9eeff;
+  --preview-rail: #3c5fc2;
+  --preview-bg: #f3f5fa;
+  --preview-surface: #ffffff;
+  --preview-frame: #edf1f8;
+  --preview-accent: #496fd8;
+  --preview-line: #cbd4e3;
+}
+
+.theme-card[data-preview-preset='serene'][data-preview-mode='dark'] {
+  --preview-side: #10172b;
+  --preview-active: #455eb6;
+  --preview-rail: #bdc9ff;
+  --preview-bg: #10162a;
+  --preview-surface: #19223b;
+  --preview-frame: #0c1122;
+  --preview-accent: #9baeff;
+  --preview-line: #465576;
+}
+
+.theme-card[data-preview-preset='slate'][data-preview-mode='light'] {
+  --preview-side: #f6fafe;
+  --preview-active: #eaeef2;
+  --preview-rail: #3f465c;
+  --preview-bg: #eaeef2;
+  --preview-surface: #ffffff;
+  --preview-frame: #f6fafe;
+  --preview-accent: #171c1f;
+  --preview-line: #76777d;
+}
+
+.theme-card[data-preview-preset='slate'][data-preview-mode='dark'] {
+  --preview-side: #101214;
+  --preview-active: #565e74;
+  --preview-rail: #edf1f5;
+  --preview-bg: #171c1f;
+  --preview-surface: #1e2226;
+  --preview-frame: #101214;
+  --preview-accent: #bec6e0;
+  --preview-line: #565e74;
+}
+
+.theme-card[data-preview-preset='asencia'][data-preview-mode='light'] {
+  --preview-side: #f5f6f7;
+  --preview-active: #cbe8e2;
+  --preview-rail: #3a9a8a;
+  --preview-bg: #e6eef2;
+  --preview-surface: #ffffff;
+  --preview-frame: #f5f6f7;
+  --preview-accent: #45b4a2;
+  --preview-line: #a9bec9;
+}
+
+.theme-card[data-preview-preset='asencia'][data-preview-mode='dark'] {
+  --preview-side: #0a1526;
+  --preview-active: #45b4a2;
+  --preview-rail: #cbe8e2;
+  --preview-bg: #121a28;
+  --preview-surface: #1b2c49;
+  --preview-frame: #0a1526;
+  --preview-accent: #5fc4b4;
+  --preview-line: #3a5278;
+}

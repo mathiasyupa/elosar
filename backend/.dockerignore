@@ -1,0 +1,43 @@
+# Dependencies (rebuilt inside the image)
+/node_modules
+/vendor
+
+# Local env & secrets — provided by Railway at runtime
+.env
+.env.*
+!.env.example
+auth.json
+
+# Build output (regenerated)
+/public/build
+/public/hot
+/public/storage
+
+# Stale cached manifests from local dev (regenerated at runtime; would pull in
+# dev-only providers like Pail under --no-dev and crash the container)
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Local-only artifacts (docs, branding scratch)
+/documentacion
+*.png
+
+# VCS / IDE / OS
+/.git
+/.github
+/.idea
+/.vscode
+/.zed
+/.nova
+/.cursor
+/.codex
+.DS_Store
+Thumbs.db
+
+# Tests & dev caches
+/.phpunit.cache
+.phpunit.result.cache
+/storage/pail
+*.log

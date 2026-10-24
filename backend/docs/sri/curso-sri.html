@@ -1,0 +1,1704 @@
+<title>Facturación electrónica SRI — recorrido guiado por el código de Elosar</title>
+
+<style>
+  :root {
+    --paper:   #FAFAF8;
+    --surface: #FFFFFF;
+    --sunk:    #F2F3F0;
+    --ink:     #161A22;
+    --ink-2:   #4A5261;
+    --ink-3:   #79808D;
+    --line:    #E2E3DF;
+    --line-2:  #CFD1CC;
+    --accent:  #1F4E79;
+    --accent-soft: #E9F0F6;
+    --seal:    #A03A28;
+    --seal-soft:   #F7EDEA;
+    --ok:      #276749;
+    --ok-soft: #E9F2EC;
+    --amber:   #8A6114;
+    --amber-soft: #F7F0DF;
+    --shadow:  0 1px 2px rgba(22,26,34,.06), 0 8px 24px -16px rgba(22,26,34,.25);
+
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans:  system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono:  ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:   #11141A;
+      --surface: #171B23;
+      --sunk:    #1D222B;
+      --ink:     #E7EAEE;
+      --ink-2:   #A9AFBA;
+      --ink-3:   #7B828F;
+      --line:    #262B35;
+      --line-2:  #343A46;
+      --accent:  #83B3DD;
+      --accent-soft: #1A2734;
+      --seal:    #E2917C;
+      --seal-soft:   #2C1F1C;
+      --ok:      #78C39B;
+      --ok-soft: #172620;
+      --amber:   #D8B063;
+      --amber-soft: #272016;
+      --shadow:  0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:#11141A; --surface:#171B23; --sunk:#1D222B;
+    --ink:#E7EAEE; --ink-2:#A9AFBA; --ink-3:#7B828F;
+    --line:#262B35; --line-2:#343A46;
+    --accent:#83B3DD; --accent-soft:#1A2734;
+    --seal:#E2917C; --seal-soft:#2C1F1C;
+    --ok:#78C39B; --ok-soft:#172620;
+    --amber:#D8B063; --amber-soft:#272016;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+
+  :root[data-theme="light"] {
+    --paper:#FAFAF8; --surface:#FFFFFF; --sunk:#F2F3F0;
+    --ink:#161A22; --ink-2:#4A5261; --ink-3:#79808D;
+    --line:#E2E3DF; --line-2:#CFD1CC;
+    --accent:#1F4E79; --accent-soft:#E9F0F6;
+    --seal:#A03A28; --seal-soft:#F7EDEA;
+    --ok:#276749; --ok-soft:#E9F2EC;
+    --amber:#8A6114; --amber-soft:#F7F0DF;
+    --shadow:0 1px 2px rgba(22,26,34,.06), 0 8px 24px -16px rgba(22,26,34,.25);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Shell ───────────────────────────────────────────────── */
+  .shell {
+    display: grid;
+    grid-template-columns: 268px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1240px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 32px 24px 40px;
+    border-right: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+
+  .rail-brand {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.25;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  .rail-sub {
+    margin: 0 0 20px;
+    color: var(--ink-3);
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-track {
+    height: 4px; border-radius: 2px;
+    background: var(--line); overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: var(--accent);
+    transition: width .35s ease;
+  }
+  .progress-label {
+    margin-top: 7px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rail nav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+  .rail nav a {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 8px;
+    align-items: baseline;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: var(--ink-2);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .rail nav a:hover { background: var(--sunk); color: var(--ink); }
+  .rail nav a .n {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .rail nav a.done .n::after { content: '✓'; margin-left: 3px; color: var(--ok); }
+  .rail nav a.done { color: var(--ink-3); }
+
+  .theme-btn {
+    margin-top: 24px;
+    font: inherit; font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--line-2);
+    color: var(--ink-2);
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  main { padding: 40px 56px 120px; min-width: 0; }
+
+  /* ── Portada ─────────────────────────────────────────────── */
+  .cover { padding-bottom: 40px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px;
+  }
+  .cover h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(30px, 4.4vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .cover .lede {
+    font-size: 18px;
+    line-height: 1.62;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0 0 14px;
+  }
+
+  /* ── Estaciones ──────────────────────────────────────────── */
+  section.station {
+    padding: 44px 0 8px;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 20px;
+  }
+  section.station:last-of-type { border-bottom: 0; }
+
+  .st-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .st-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .1em;
+    color: var(--accent);
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+  .st-head h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(23px, 2.6vw, 30px);
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .st-lede {
+    font-size: 17px;
+    color: var(--ink-2);
+    max-width: 64ch;
+    margin: 0 0 22px;
+    font-style: italic;
+    font-family: var(--serif);
+  }
+
+  main p { max-width: 68ch; }
+  main li { max-width: 66ch; }
+  main h3 {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 30px 0 10px;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: .875em;
+    background: var(--sunk);
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+  strong { font-weight: 650; }
+  a { color: var(--accent); }
+
+  /* ── Bloques ─────────────────────────────────────────────── */
+  .block {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    margin: 22px 0;
+    overflow: hidden;
+  }
+  .block > .bhead {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px;
+    background: var(--sunk);
+    border-bottom: 1px solid var(--line);
+    font-size: 11.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .block > .bbody { padding: 14px 16px; }
+  .block > .bbody > :first-child { margin-top: 0; }
+  .block > .bbody > :last-child { margin-bottom: 0; }
+
+  /* ficha: dónde vive en el código */
+  .ficha { border-left: 3px solid var(--accent); }
+  .ficha .bhead { color: var(--accent); }
+  .files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .files li { display: grid; grid-template-columns: minmax(0,auto) 1fr; gap: 4px 12px; align-items: baseline; max-width: none; }
+  .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink);
+    word-break: break-all;
+  }
+  .path .ln { color: var(--accent); }
+  .files .why { font-size: 14px; color: var(--ink-2); grid-column: 1 / -1; }
+  @media (min-width: 900px) {
+    .files li { grid-template-columns: 340px 1fr; }
+    .files .why { grid-column: 2; }
+    .files .path { grid-column: 1; }
+  }
+
+  /* probar */
+  .probar { border-left: 3px solid var(--ok); }
+  .probar .bhead { color: var(--ok); }
+  pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    background: var(--sunk);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: 0 0 12px;
+  }
+  pre:last-child { margin-bottom: 0; }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .cmt { color: var(--ink-3); }
+
+  /* compruébate */
+  details.check {
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    background: var(--surface);
+    margin: 22px 0 6px;
+    padding: 0;
+  }
+  details.check summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    list-style: none;
+    display: flex; gap: 10px; align-items: baseline;
+  }
+  details.check summary::-webkit-details-marker { display: none; }
+  details.check summary::before {
+    content: '?';
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--accent);
+    flex: none;
+  }
+  details.check[open] summary { border-bottom: 1px solid var(--line); }
+  details.check .ans { padding: 12px 16px 14px 16px; color: var(--ink-2); }
+  details.check .ans > :first-child { margin-top: 0; }
+  details.check .ans > :last-child { margin-bottom: 0; }
+
+  /* nota / aviso */
+  .nota {
+    border-left: 3px solid var(--amber);
+    background: var(--amber-soft);
+    border-radius: 0 5px 5px 0;
+    padding: 12px 16px;
+    margin: 22px 0;
+    font-size: 15px;
+  }
+  .nota > :first-child { margin-top: 0; }
+  .nota > :last-child { margin-bottom: 0; }
+  .nota .tag {
+    display: block;
+    font-size: 11px; letter-spacing: .09em; text-transform: uppercase;
+    font-weight: 700; color: var(--amber); margin-bottom: 4px;
+  }
+  .nota.rojo { border-left-color: var(--seal); background: var(--seal-soft); }
+  .nota.rojo .tag { color: var(--seal); }
+
+  /* marcar estación */
+  .mark {
+    display: flex; align-items: center; gap: 9px;
+    margin: 26px 0 4px;
+    font-size: 13.5px;
+    color: var(--ink-3);
+    cursor: pointer;
+    user-select: none;
+    width: fit-content;
+  }
+  .mark input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+  /* ── Mapa del flujo ──────────────────────────────────────── */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 6px 0; }
+  .flow-step {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .flow-step .marker { display: flex; flex-direction: column; align-items: center; }
+  .flow-step .dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex: none;
+  }
+  .flow-step .rod { width: 1.5px; flex: 1; min-height: 22px; background: var(--line-2); }
+  .flow-step:last-child .rod { display: none; }
+  .flow-step .txt { padding-bottom: 16px; }
+  .flow-step .txt b { display: block; font-size: 15.5px; }
+  .flow-step .txt span { font-size: 14px; color: var(--ink-2); }
+  .flow-step .txt em { font-family: var(--mono); font-style: normal; font-size: 12px; color: var(--ink-3); display: block; margin-top: 2px; word-break: break-all; }
+
+  /* ── Clave de acceso interactiva ─────────────────────────── */
+  .clave-tool { }
+  .clave-input {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .02em;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .clave-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .segs { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+  .seg {
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    padding: 6px 9px;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .seg .sv {
+    font-family: var(--mono); font-size: 13.5px; font-weight: 600;
+    display: block; word-break: break-all; color: var(--ink);
+  }
+  .seg .sl {
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink-3); display: block; margin-top: 3px;
+  }
+  .seg.hl { border-color: var(--accent); background: var(--accent-soft); }
+  .seg.hl .sv { color: var(--accent); }
+  .verdict { font-size: 14.5px; padding: 10px 13px; border-radius: 4px; }
+  .verdict.good { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok); }
+  .verdict.bad  { background: var(--seal-soft); color: var(--seal); border: 1px solid var(--seal); }
+  .verdict b { font-family: var(--mono); }
+
+  /* ── Estados ─────────────────────────────────────────────── */
+  .estados { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0; }
+  .estado {
+    flex: 1 1 190px;
+    border: 1px solid var(--line);
+    border-top-width: 3px;
+    border-radius: 0 0 5px 5px;
+    padding: 12px 14px;
+    background: var(--surface);
+  }
+  .estado b { font-family: var(--mono); font-size: 13px; display: block; margin-bottom: 5px; }
+  .estado span { font-size: 13.5px; color: var(--ink-2); }
+  .estado.e-pend { border-top-color: var(--amber); }
+  .estado.e-pend b { color: var(--amber); }
+  .estado.e-auth { border-top-color: var(--ok); }
+  .estado.e-auth b { color: var(--ok); }
+  .estado.e-rej  { border-top-color: var(--seal); }
+  .estado.e-rej b { color: var(--seal); }
+  .estado.e-null { border-top-color: var(--line-2); }
+  .estado.e-null b { color: var(--ink-3); }
+
+  /* ── Tabla ───────────────────────────────────────────────── */
+  .tabla-wrap { overflow-x: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--sunk); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 650; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td code { white-space: nowrap; }
+
+  ul.tight { padding-left: 20px; }
+  ul.tight li { margin-bottom: 5px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail {
+      position: static; max-height: none; border-right: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 24px 22px;
+    }
+    main { padding: 28px 22px 90px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+</style>
+
+<div class="shell">
+
+  <aside class="rail">
+    <p class="rail-brand">Facturación electrónica&nbsp;SRI</p>
+    <p class="rail-sub">Recorrido guiado · Elosar</p>
+
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf"></div></div>
+      <div class="progress-label" id="pl">0 de 14 estaciones</div>
+    </div>
+
+    <nav aria-label="Índice de estaciones">
+      <ol id="toc">
+        <li><a href="#e00" data-st="e00"><span class="n">00</span><span>El mapa completo</span></a></li>
+        <li><a href="#e01" data-st="e01"><span class="n">01</span><span>La factura de verdad es un XML</span></a></li>
+        <li><a href="#e02" data-st="e02"><span class="n">02</span><span>Quién puede facturar</span></a></li>
+        <li><a href="#e03" data-st="e03"><span class="n">03</span><span>Dónde nace todo</span></a></li>
+        <li><a href="#e04" data-st="e04"><span class="n">04</span><span>La numeración</span></a></li>
+        <li><a href="#e05" data-st="e05"><span class="n">05</span><span>La clave de acceso</span></a></li>
+        <li><a href="#e06" data-st="e06"><span class="n">06</span><span>El XML por dentro</span></a></li>
+        <li><a href="#e07" data-st="e07"><span class="n">07</span><span>El XSD: revisar antes</span></a></li>
+        <li><a href="#e08" data-st="e08"><span class="n">08</span><span>El certificado .p12</span></a></li>
+        <li><a href="#e09" data-st="e09"><span class="n">09</span><span>La firma XAdES-BES</span></a></li>
+        <li><a href="#e10" data-st="e10"><span class="n">10</span><span>SOAP y los dos ambientes</span></a></li>
+        <li><a href="#e11" data-st="e11"><span class="n">11</span><span>Estados y reintentos</span></a></li>
+        <li><a href="#e12" data-st="e12"><span class="n">12</span><span>El RIDE y la retención</span></a></li>
+        <li><a href="#e13" data-st="e13"><span class="n">13</span><span>Probarlo hoy · qué falta</span></a></li>
+      </ol>
+    </nav>
+
+    <button class="theme-btn" id="tbtn" type="button">Cambiar tema</button>
+  </aside>
+
+  <main>
+
+    <header class="cover">
+      <p class="eyebrow">medico-backend · app/Services/Sri</p>
+      <h1>Cómo Elosar convierte una consulta médica en una factura que el SRI autoriza</h1>
+      <p class="lede">
+        Catorce estaciones en el orden real en que ocurren las cosas. Cada una explica el concepto
+        desde cero, te dice <strong>exactamente en qué archivo y línea del proyecto vive</strong>,
+        te da algo que puedas correr o mirar, y termina con una pregunta para comprobar que lo
+        entendiste.
+      </p>
+      <p class="lede">
+        No hace falta que sepas PHP, XML ni criptografía. Sí hace falta que vayas en orden: cada
+        estación asume la anterior.
+      </p>
+      <div class="nota">
+        <span class="tag">Antes de empezar</span>
+        <p>
+          Este recorrido acompaña al documento de referencia que ya existe en el repo:
+          <code>docs/sri/documentacion-facturacion-electronica-sri.md</code>. Aquel se lee de
+          corrido y explica la teoría; este te lleva por el código paso a paso. Úsalos juntos.
+        </p>
+      </div>
+    </header>
+
+    <!-- ══════════════ 00 ══════════════ -->
+    <section class="station" id="e00">
+      <div class="st-head"><span class="st-num">ESTACIÓN 00</span><h2>El mapa completo, de un vistazo</h2></div>
+      <p class="st-lede">Antes de entrar a las piezas, mira el recorrido entero. Todo lo demás es un zoom sobre uno de estos pasos.</p>
+
+      <p>
+        Cuando en Elosar se crea una factura, no pasa una cosa: pasan nueve, en cadena. Este es el
+        orden, y es exactamente el orden de las estaciones que siguen.
+      </p>
+
+      <div class="flow">
+        <div class="flow-step"><div class="marker"><div class="dot">1</div><div class="rod"></div></div>
+          <div class="txt"><b>Se crea la factura</b><span>Alguien cobra una consulta. Se guarda en la base de datos con su número interno.</span><em>InvoiceService::create()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">2</div><div class="rod"></div></div>
+          <div class="txt"><b>Se encola un trabajo en segundo plano</b><span>El médico no espera: el envío al SRI ocurre aparte, después de que la transacción se confirma.</span><em>AuthorizeSriVoucherJob::dispatch()-&gt;afterCommit()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">3</div><div class="rod"></div></div>
+          <div class="txt"><b>Se calcula la clave de acceso</b><span>49 dígitos que identifican de forma única ese comprobante en todo el Ecuador.</span><em>SriClaveAccesoBuilder::build()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">4</div><div class="rod"></div></div>
+          <div class="txt"><b>Se arma el XML</b><span>El documento fiscal de verdad, con la estructura exacta que el SRI define.</span><em>SriXmlBuilder::buildInvoice()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">5</div><div class="rod"></div></div>
+          <div class="txt"><b>Se valida contra el XSD oficial</b><span>Revisión local previa: si el XML está mal formado, ni se envía.</span><em>SriXsdValidator::validate()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">6</div><div class="rod"></div></div>
+          <div class="txt"><b>Se firma digitalmente</b><span>Con el certificado .p12 del emisor. Firma XAdES-BES.</span><em>SriCertificateLoader + SriXmlSigner::sign()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">7</div><div class="rod"></div></div>
+          <div class="txt"><b>Recepción</b><span>Se envía el XML firmado al SRI por SOAP. Responde RECIBIDA o DEVUELTA.</span><em>SriSoapClient::send()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">8</div><div class="rod"></div></div>
+          <div class="txt"><b>Autorización</b><span>Se le pregunta al SRI por la clave de acceso. Responde AUTORIZADO, NO AUTORIZADO o EN PROCESAMIENTO.</span><em>SriSoapClient::authorize()</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">9</div></div>
+          <div class="txt"><b>Se guarda el resultado y se imprime el RIDE</b><span>Número de autorización, fecha y estado quedan en la factura. El PDF con el QR ya se puede entregar.</span><em>sri_status = authorized · InvoiceService::pdf()</em></div></div>
+      </div>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive el orquestador</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:41</span></span><span class="why"><code>authorizeInvoice()</code> — la cadena completa en 9 líneas. Si solo lees un método del proyecto, lee este.</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:131</span></span><span class="why"><code>prepareInvoice()</code> — pasos 3 a 6 (clave, XML, validación, firma).</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:196</span></span><span class="why"><code>submitAndAuthorize()</code> — pasos 7 a 9 (recepción, autorización, guardado).</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué el envío al SRI no ocurre dentro de la misma petición que crea la factura?</summary>
+        <div class="ans"><p>Porque hablar con el SRI es lento y poco fiable: es una llamada de red a un servidor externo que puede tardar segundos o estar caído. Si el médico tuviera que esperar a eso para ver su factura creada, la aplicación se sentiría rota cada vez que el SRI tiene un mal día. Por eso se encola un <em>job</em>: la factura se guarda y se muestra al instante, y la autorización pasa por detrás — con reintentos, que es la estación 11.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e00"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 01 ══════════════ -->
+    <section class="station" id="e01">
+      <div class="st-head"><span class="st-num">ESTACIÓN 01</span><h2>La factura de verdad es un XML, no el PDF</h2></div>
+      <p class="st-lede">Si te quedas con una sola idea de todo el recorrido, que sea esta.</p>
+
+      <p>
+        Lo natural es pensar que la factura es el papel bonito con el logo de la clínica. Para el
+        SRI y para la ley ecuatoriana, <strong>no</strong>. El documento fiscal es un archivo de
+        texto con estructura, llamado <strong>XML</strong>. El PDF es una representación impresa de
+        ese XML — se llama <strong>RIDE</strong> (Representación Impresa del Documento Electrónico)
+        y sirve para que el paciente tenga algo en la mano. Si el XML no está autorizado, el PDF no
+        vale nada, por bonito que sea.
+      </p>
+
+      <p>
+        Un XML es simplemente texto con etiquetas que dicen qué es cada dato. Donde tú ves
+        «subtotal: 100», el XML dice:
+      </p>
+
+      <pre><code>&lt;totalSinImpuestos&gt;100.00&lt;/totalSinImpuestos&gt;</code></pre>
+
+      <p>
+        La etiqueta de apertura, el valor, la etiqueta de cierre. Nada más. Un XML de factura son
+        unas cien de esas líneas anidadas. La razón de existir de las etiquetas es que una máquina
+        del SRI pueda leer el archivo sin ambigüedad: no tiene que adivinar dónde está el subtotal,
+        está entre <code>&lt;totalSinImpuestos&gt;</code> y su cierre.
+      </p>
+
+      <p>
+        Este proyecto guarda el XML firmado dentro de la propia factura, en la columna
+        <code>sri_xml</code>. Es decir: <strong>el documento legal vive en tu base de datos</strong>,
+        no en un archivo suelto.
+      </p>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">database/migrations/2026_06_12_000002_add_sri_fields_to_invoices.php</span><span class="why">La migración que añade <code>sri_xml</code> y todas las columnas SRI a <code>invoices</code>. Léela: es el inventario de todo lo que el sistema necesita recordar de cada comprobante.</span></li>
+            <li><span class="path">app/Models/Invoice.php<span class="ln">:76</span></span><span class="why"><code>sri_xml</code> está en <code>$hidden</code>: nunca sale por la API. Es un documento firmado, no un dato de pantalla.</span></li>
+            <li><span class="path">resources/views/invoices/invoice.blade.php<span class="ln">:160</span></span><span class="why">El RIDE — la «foto» del XML. Fíjate en que el bloque SRI solo aparece <code>@if (!empty($invoice-&gt;sri_authorization_number))</code>.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="nota">
+        <span class="tag">Detalle que vale oro</span>
+        <p>
+          En <code>invoice.blade.php</code>, cuando el workspace <em>no</em> tiene SRI habilitado, el
+          PDF imprime un sello que dice <strong>DOCUMENTO INTERNO</strong>. Es honestidad de
+          producto: sin autorización del SRI, ese papel no es una factura, y el sistema lo dice en
+          lugar de disimularlo.
+        </p>
+      </div>
+
+      <details class="check"><summary>Un paciente pierde su PDF y pide una copia. ¿Hay que volver a facturar?</summary>
+        <div class="ans"><p>No. El comprobante ya está autorizado y su XML vive en <code>sri_xml</code>; el PDF se vuelve a generar cuando quieras a partir de los mismos datos (<code>InvoiceService::pdf()</code>). Volver a facturar sería emitir un comprobante <em>nuevo</em> ante el SRI, con otra clave de acceso y otro secuencial — es decir, cobrar dos veces a efectos fiscales. Ese es exactamente el error que se comete cuando se cree que «la factura es el PDF».</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e01"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 02 ══════════════ -->
+    <section class="station" id="e02">
+      <div class="st-head"><span class="st-num">ESTACIÓN 02</span><h2>Quién puede facturar: la identidad fiscal del workspace</h2></div>
+      <p class="st-lede">Antes de emitir nada, el sistema necesita saber quién es legalmente el emisor. Eso vive en el workspace.</p>
+
+      <p>
+        En Elosar, el <strong>workspace</strong> (el consultorio o la clínica) es el emisor legal de
+        los comprobantes. Cada workspace guarda su propia identidad fiscal: RUC, razón social,
+        dirección de matriz, código de establecimiento, punto de emisión, y la configuración de
+        facturación electrónica.
+      </p>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Qué es, en cristiano</th></tr></thead>
+          <tbody>
+            <tr><td><code>ruc</code></td><td>13 dígitos. El identificador fiscal del emisor ante el SRI.</td></tr>
+            <tr><td><code>razon_social</code></td><td>El nombre legal, tal como está inscrito. Puede no ser el nombre comercial.</td></tr>
+            <tr><td><code>dir_matriz</code></td><td>Dirección de la casa matriz. Obligatoria en el XML.</td></tr>
+            <tr><td><code>cod_establecimiento</code></td><td>3 dígitos, por defecto <code>001</code>. El local físico. Una clínica con dos sedes tendría 001 y 002.</td></tr>
+            <tr><td><code>pto_emision</code></td><td>3 dígitos, por defecto <code>001</code>. La «caja» dentro de ese local.</td></tr>
+            <tr><td><code>obligado_contabilidad</code></td><td>Sí/No. Va literal en el XML como <code>SI</code> o <code>NO</code>.</td></tr>
+            <tr><td><code>sri_environment</code></td><td><code>test</code> o <code>production</code>. La estación 10 explica por qué esto es lo más peligroso de toda la configuración.</td></tr>
+            <tr><td><code>sri_certificate_path</code></td><td>Ruta del certificado <code>.p12</code> en disco privado. Estación 08.</td></tr>
+            <tr><td><code>sri_certificate_password</code></td><td>Su contraseña. Cifrada en base de datos.</td></tr>
+            <tr><td><code>sri_enabled</code></td><td>El interruptor. Sin esto en <code>true</code>, nada se envía al SRI.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Todo esto se resume en un método que es la <strong>puerta de entrada</strong> de todo el
+        subsistema: <code>canIssueSriVouchers()</code>. Si devuelve <code>false</code>, no se
+        encola nada, no se envía nada, y no pasa nada. Es la razón por la que un consultorio recién
+        creado puede usar Elosar sin tocar el SRI en absoluto.
+      </p>
+
+      <pre><code><span class="cmt">// app/Models/Workspace.php:78</span>
+public function canIssueSriVouchers(): bool
+{
+    return $this-&gt;sri_enabled
+        &amp;&amp; ! empty($this-&gt;ruc)
+        &amp;&amp; ! empty($this-&gt;sri_certificate_path)
+        &amp;&amp; isset(self::SRI_ENVIRONMENTS[(string) $this-&gt;sri_environment]);
+}</code></pre>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">database/migrations/2026_06_12_000001_add_sri_config_to_workspaces.php</span><span class="why">De dónde salieron todas esas columnas. También añade <code>acess_establishment_code</code> y <code>senescyt_note</code>, que son informativos: no hay integración con ACESS ni SENESCYT.</span></li>
+            <li><span class="path">app/Models/Workspace.php<span class="ln">:16-23</span></span><span class="why">Las constantes <code>SRI_ENVIRONMENTS</code> — el mapa <code>test → "1"</code>, <code>production → "2"</code>.</span></li>
+            <li><span class="path">app/Models/Workspace.php<span class="ln">:78</span></span><span class="why"><code>canIssueSriVouchers()</code>, la puerta.</span></li>
+            <li><span class="path">app/Http/Controllers/Api/SettingsController.php</span><span class="why">Cómo el médico configura esto desde la app. La ruta es <code>POST /api/v1/settings</code> y <strong>solo el dueño</strong> del workspace puede tocarla (<code>routes/api.php:123</code>).</span></li>
+            <li><span class="path">medico-web/src/features/settings/SettingsPage.tsx<span class="ln">:178</span></span><span class="why">La pantalla real: selector de ambiente, subida del certificado, y el toggle <code>sri_enabled</code> que está <strong>deshabilitado hasta que hay certificado</strong>.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="block probar">
+        <div class="bhead">Míralo tú mismo</div>
+        <div class="bbody">
+          <pre><code><span class="cmt"># Abre tinker y pregúntale a un workspace si puede facturar</span>
+./vendor/bin/sail artisan tinker
+&gt;&gt;&gt; $w = App\Models\Workspace::find(1);
+&gt;&gt;&gt; $w-&gt;canIssueSriVouchers();
+&gt;&gt;&gt; $w-&gt;only(['ruc','razon_social','sri_environment','sri_enabled']);</code></pre>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué el frontend deshabilita el toggle «SRI habilitado» mientras no haya certificado subido?</summary>
+        <div class="ans"><p>Porque activarlo sin certificado no produciría facturas electrónicas, produciría <em>facturas fallidas</em>. <code>canIssueSriVouchers()</code> devolvería <code>false</code> y no se enviaría nada — pero el médico creería que sí. La interfaz refleja la regla del backend en lugar de dejar que el usuario configure un estado imposible. Fíjate en que el backend <strong>igual</strong> lo comprueba: la UI ayuda, no protege.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e02"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 03 ══════════════ -->
+    <section class="station" id="e03">
+      <div class="st-head"><span class="st-num">ESTACIÓN 03</span><h2>Dónde nace todo: el disparador</h2></div>
+      <p class="st-lede">Hay exactamente tres puertas por las que un comprobante entra al pipeline del SRI. Conócelas y sabrás dónde mirar cuando algo no se envíe.</p>
+
+      <p>
+        <strong>Puerta 1 — automática.</strong> Cuando se crea una factura, si el workspace puede
+        emitir, se encola el job. La palabra clave es <code>afterCommit()</code>: el job se encola
+        solo <em>después</em> de que la transacción de base de datos se confirma, para que el
+        trabajador en segundo plano nunca lea una factura que todavía no existe.
+      </p>
+
+      <pre><code><span class="cmt">// app/Services/InvoiceService.php:146</span>
+if ($workspace-&gt;canIssueSriVouchers()) {
+    AuthorizeSriVoucherJob::dispatch($invoice)-&gt;afterCommit();
+}</code></pre>
+
+      <p>
+        <strong>Puerta 2 — la nota de crédito.</strong> Cuando se anula una factura que ya tenía
+        pagos, el sistema genera una nota de crédito (<code>NC-XXXX</code>) y la manda al SRI por el
+        mismo camino. Una factura autorizada no se borra: se compensa con una nota de crédito. Esa
+        es la forma legal de «deshacer».
+      </p>
+
+      <p>
+        <strong>Puerta 3 — a mano.</strong> Desde el panel Filament hay un botón «Send to SRI», y
+        desde la consola existe <code>php artisan sri:resend</code> para reintentar en lote los
+        comprobantes que quedaron rechazados o atascados.
+      </p>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/InvoiceService.php<span class="ln">:148</span></span><span class="why">Puerta 1: factura nueva.</span></li>
+            <li><span class="path">app/Services/InvoiceService.php<span class="ln">:253</span></span><span class="why">Puerta 2: nota de crédito al anular.</span></li>
+            <li><span class="path">app/Filament/Resources/Invoices/Pages/ViewInvoice.php<span class="ln">:176</span></span><span class="why">Puerta 3a: el botón manual del panel admin. Solo visible si el estado es <code>null</code>, <code>rejected</code> o <code>pending</code> — nunca reenvía algo ya autorizado.</span></li>
+            <li><span class="path">app/Console/Commands/SriResendCommand.php</span><span class="why">Puerta 3b: <code>php artisan sri:resend --status=rejected,pending</code>.</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:76</span></span><span class="why"><code>resend()</code> — resetea el estado a <code>pending</code> y vuelve a encolar. Devuelve <code>false</code> sin hacer nada si ya estaba autorizado.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>Sin <code>afterCommit()</code>, ¿qué podría salir mal exactamente?</summary>
+        <div class="ans"><p>El job se encolaría dentro de la transacción. Un trabajador en otro proceso podría recogerlo <em>inmediatamente</em>, antes de que la transacción hiciera commit — y buscaría en la base de datos una factura que todavía no está visible para él. Resultado: el job falla con «factura no encontrada», o peor, la transacción se revierte y queda un job encolado para una factura que nunca existió. <code>afterCommit()</code> hace que el encolado espere al commit.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e03"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 04 ══════════════ -->
+    <section class="station" id="e04">
+      <div class="st-head"><span class="st-num">ESTACIÓN 04</span><h2>La numeración: de <code>F-0001</code> a <code>001-001-000000001</code></h2></div>
+      <p class="st-lede">Elosar tiene dos numeraciones para la misma factura, y hay que entender por qué.</p>
+
+      <p>
+        La numeración <strong>interna</strong> es <code>F-0001</code>, <code>F-0002</code>… Sirve
+        para que el equipo de la clínica se entienda («búscame la F-0341»). Se genera con un
+        contador en el workspace protegido por <code>lockForUpdate()</code>, para que dos
+        recepcionistas facturando a la vez no se pisen el número.
+      </p>
+
+      <p>
+        La numeración <strong>fiscal</strong> es <code>001-001-000000001</code> y tiene tres partes
+        que ya conoces de la estación 02: <em>establecimiento</em> – <em>punto de emisión</em> –
+        <em>secuencial de 9 dígitos</em>. Esa es la que el SRI reconoce y la que se imprime en el
+        RIDE como «N° Comprobante».
+      </p>
+
+      <p>
+        El puente entre las dos es más simple de lo que parece: se le quitan las letras al número
+        interno y lo que queda es el contador.
+      </p>
+
+      <pre><code><span class="cmt">// app/Services/Sri/SriService.php:277</span>
+private function counterFromNumber(string $number): int
+{
+    return (int) preg_replace('/\D/', '', $number);   <span class="cmt">// "F-0341" → 341</span>
+}
+
+<span class="cmt">// …y de ahí, línea 96:</span>
+"001" . "-" . "001" . "-" . "000000341"</code></pre>
+
+      <div class="nota">
+        <span class="tag">Un bug real que se arregló</span>
+        <p>
+          La migración original ponía <code>sri_sequence_number</code> como <strong>único global</strong>.
+          Eso significaba que si la clínica A emitía su <code>001-001-000000001</code>, la clínica B
+          <em>nunca</em> podría emitir el suyo — y son emisores distintos, con RUC distinto, cada uno
+          con derecho a empezar en 1. Se corrigió a único <em>por workspace</em> en
+          <code>2026_06_15_000001_fix_sri_sequence_number_unique_per_workspace.php</code>
+          (y su gemela para notas de crédito, <code>2026_06_15_000005</code>). Es el tipo de error
+          que solo aparece cuando el segundo cliente entra al sistema.
+        </p>
+      </div>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:96</span></span><span class="why"><code>generateSequenceNumber()</code> — arma <code>estab-ptoEmi-secuencial</code> con relleno de ceros.</span></li>
+            <li><span class="path">app/Services/InvoiceService.php</span><span class="why">El contador interno con <code>Workspace::lockForUpdate()</code>. Búscalo dentro de <code>create()</code>.</span></li>
+            <li><span class="path">database/migrations/2026_06_15_000001_…unique_per_workspace.php</span><span class="why">El arreglo de unicidad multi-tenant.</span></li>
+            <li><span class="path">tests/Feature/Sri/SriSequenceNumberUniquenessTest.php</span><span class="why">El test que garantiza que dos workspaces pueden tener el mismo secuencial.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>Una clínica con dos sedes quiere facturar desde ambas. ¿Qué cambia?</summary>
+        <div class="ans"><p>El <code>cod_establecimiento</code>: la sede 1 emite <code>001-001-…</code> y la sede 2 <code>002-001-…</code>. Cada combinación establecimiento + punto de emisión lleva <strong>su propio secuencial independiente</strong>, empezando en 1. Ojo: en el modelo actual esos campos viven en el workspace, así que hoy dos sedes serían dos workspaces. Es una limitación real del diseño actual, no algo que ya esté resuelto.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e04"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 05 ══════════════ -->
+    <section class="station" id="e05">
+      <div class="st-head"><span class="st-num">ESTACIÓN 05</span><h2>La clave de acceso: 49 dígitos que son la cédula del comprobante</h2></div>
+      <p class="st-lede">La pieza más característica del sistema ecuatoriano. Y la más fácil de entender si la desarmas.</p>
+
+      <p>
+        Cada comprobante electrónico del Ecuador tiene una <strong>clave de acceso</strong>: 49
+        dígitos que lo identifican de forma única en todo el país. No es un número aleatorio: es
+        una concatenación de datos que ya conoces, más un dígito de control al final.
+      </p>
+
+      <p>
+        Desármala tú mismo. El campo de abajo tiene una clave de ejemplo; puedes editarla y ver
+        cómo cambia la lectura y si el dígito verificador sigue cuadrando.
+      </p>
+
+      <div class="block clave-tool">
+        <div class="bhead">Desarmador de clave de acceso</div>
+        <div class="bbody">
+          <label for="clave" style="font-size:13px;color:var(--ink-3);display:block;margin-bottom:6px;">49 dígitos</label>
+          <input class="clave-input" id="clave" type="text" inputmode="numeric" spellcheck="false"
+                 value="2807202601179123456700110010010000000011234567810">
+          <div class="segs" id="segs"></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+
+      <h3>El dígito verificador (módulo 11)</h3>
+      <p>
+        Los primeros 48 dígitos son datos. El dígito 49 se <em>calcula</em> a partir de ellos, y
+        existe para detectar errores de tipeo: si alguien dicta la clave por teléfono y se equivoca
+        en un dígito, la cuenta no cuadra y el SRI lo rechaza en lugar de aceptar un comprobante
+        equivocado.
+      </p>
+      <p>
+        La receta, tal cual está en el código: recorre los 48 dígitos <strong>de derecha a
+        izquierda</strong>, multiplicando cada uno por pesos que van ciclando 2, 3, 4, 5, 6, 7, 2,
+        3, 4… Suma todo. Calcula <code>11 − (suma mod 11)</code>. Si sale 11 el dígito es 0; si sale
+        10 es 1; si no, es el resultado tal cual.
+      </p>
+
+      <pre><code><span class="cmt">// app/Services/Sri/SriClaveAccesoBuilder.php:60</span>
+$weights = [2, 3, 4, 5, 6, 7];
+for ($i = strlen($digits48) - 1; $i &gt;= 0; $i--) {
+    $sum += (int) $digits48[$i] * $weights[$w];
+    $w = ($w + 1) % count($weights);
+}
+$check = 11 - ($sum % 11);
+
+return match ($check) { 11 =&gt; '0', 10 =&gt; '1', default =&gt; (string) $check };</code></pre>
+
+      <div class="nota">
+        <span class="tag">Ojo con el código numérico</span>
+        <p>
+          Los 8 dígitos del «código numérico» son <strong>aleatorios</strong>
+          (<code>random_int</code>, línea 41). El SRI no les asigna significado; existen para que dos
+          comprobantes que coinciden en todo lo demás no colisionen. Por eso la clave se calcula
+          <strong>una sola vez</strong> y se guarda: recalcularla daría otra clave distinta, y el
+          comprobante ya enviado quedaría huérfano.
+        </p>
+      </div>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriClaveAccesoBuilder.php<span class="ln">:28</span></span><span class="why"><code>build()</code> — la concatenación de los 8 campos.</span></li>
+            <li><span class="path">app/Services/Sri/SriClaveAccesoBuilder.php<span class="ln">:60</span></span><span class="why"><code>calculateMod11()</code> — el dígito verificador.</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:133</span></span><span class="why">La guarda de idempotencia: <code>if ($invoice-&gt;sri_clave_acceso &amp;&amp; $invoice-&gt;sri_xml) return;</code> — si ya se preparó, no se vuelve a hacer.</span></li>
+            <li><span class="path">tests/Unit/SriClaveAccesoBuilderTest.php</span><span class="why">Los tests del cálculo. Buen sitio para experimentar sin miedo.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="block probar">
+        <div class="bhead">Míralo tú mismo</div>
+        <div class="bbody">
+          <pre><code>./vendor/bin/sail pest tests/Unit/SriClaveAccesoBuilderTest.php</code></pre>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué la fecha va dentro de la clave de acceso, si la factura ya lleva su fecha de emisión en el XML?</summary>
+        <div class="ans"><p>Porque la clave tiene que ser única e <strong>irrepetible en el tiempo</strong>. Sin la fecha, un emisor que reinicia su secuencial (o dos comprobantes de años distintos con el mismo número) podrían producir claves idénticas. La fecha en formato <code>ddmmaaaa</code> hace que la unicidad esté garantizada por día, RUC, establecimiento, punto de emisión y secuencial a la vez. Es también la razón por la que la fecha de la clave <strong>debe coincidir</strong> con <code>fechaEmision</code> del XML: si no coinciden, el SRI lo rechaza.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e05"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 06 ══════════════ -->
+    <section class="station" id="e06">
+      <div class="st-head"><span class="st-num">ESTACIÓN 06</span><h2>El XML por dentro: cuatro bloques y una regla incómoda</h2></div>
+      <p class="st-lede">Ya sabes que el documento real es el XML. Ahora vas a ver qué lleva dentro y quién lo arma.</p>
+
+      <p>El XML de una factura tiene cuatro bloques, siempre en este orden:</p>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>Bloque</th><th>Qué lleva</th><th>De dónde salen los datos</th></tr></thead>
+          <tbody>
+            <tr><td><code>infoTributaria</code></td><td>Quién emite: ambiente, RUC, razón social, clave de acceso, tipo de documento, establecimiento, punto de emisión, secuencial.</td><td>Del <strong>workspace</strong> (estación 02).</td></tr>
+            <tr><td><code>infoFactura</code></td><td>Los totales y quién compra: fecha, datos del comprador, subtotal, descuentos, impuestos, importe total, forma de pago.</td><td>De la <strong>factura</strong>.</td></tr>
+            <tr><td><code>detalles</code></td><td>Una entrada por cada línea: código, descripción, cantidad, precio unitario, descuento e IVA de esa línea.</td><td>De los <strong>invoice_items</strong>.</td></tr>
+            <tr><td><code>infoAdicional</code></td><td>Campos libres. Aquí van el email y la dirección del comprador.</td><td>De la factura, si existen.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los códigos del IVA</h3>
+      <p>
+        El SRI no escribe «15%» en el XML: usa códigos. El impuesto IVA es el código <code>2</code>,
+        y la tarifa se codifica aparte: 0% es <code>"0"</code>, 12% es <code>"2"</code> y 15% es
+        <code>"4"</code>. Esos números no tienen lógica interna — son un catálogo que hay que
+        respetar tal cual.
+      </p>
+
+      <pre><code><span class="cmt">// app/Services/Sri/SriXmlBuilder.php:29</span>
+return match ((int) round((float) $rate)) {
+    0       =&gt; '0',
+    15      =&gt; '4',
+    12      =&gt; '2',
+    default =&gt; '0',
+};</code></pre>
+
+      <div class="nota rojo">
+        <span class="tag">La regla incómoda: el descuento global</span>
+        <p>
+          Elosar permite aplicar un descuento a toda la factura de golpe. <strong>El SRI no modela
+          eso</strong>: solo entiende descuentos línea por línea. Si se intentara repartir el
+          descuento global entre las líneas, se rompería la coherencia entre bases imponibles e IVA,
+          y el comprobante saldría con números que no cuadran.
+        </p>
+        <p>
+          La decisión que se tomó fue <strong>fallar en voz alta</strong>:
+          <code>SriXmlBuilder.php:47</code> lanza una excepción si la factura tiene descuento global.
+          Es una limitación conocida y documentada, no un descuido — y es preferible a emitir un
+          comprobante fiscalmente incorrecto.
+        </p>
+      </div>
+
+      <h3>La nota de crédito es casi lo mismo, pero no igual</h3>
+      <p>
+        <code>buildCreditNote()</code> reconstruye las mismas líneas de la factura original, pero el
+        esquema de nota de crédito (versión 1.1.0) difiere del de factura (2.1.0) en detalles que
+        parecen tonterías y no lo son:
+      </p>
+      <ul class="tight">
+        <li>El código del ítem se llama <code>codigoPrincipal</code> en la factura y <code>codigoInterno</code> en la nota de crédito.</li>
+        <li><code>totalImpuesto</code> lleva <code>&lt;tarifa&gt;</code> en la factura y <strong>no</strong> la lleva en la nota de crédito.</li>
+        <li>La nota de crédito añade <code>codDocModificado</code>, <code>numDocModificado</code> y <code>motivo</code>: qué documento corrige y por qué.</li>
+      </ul>
+      <p>Esas diferencias están comentadas en el código, en las líneas 133 y 269.</p>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriXmlBuilder.php<span class="ln">:39</span></span><span class="why"><code>buildInvoice()</code>. Todo el XML se arma concatenando strings — deliberadamente simple y legible.</span></li>
+            <li><span class="path">app/Services/Sri/SriXmlBuilder.php<span class="ln">:100</span></span><span class="why"><code>buildCreditNote()</code>.</span></li>
+            <li><span class="path">app/Services/Sri/SriXmlBuilder.php<span class="ln">:47</span></span><span class="why">El rechazo del descuento global.</span></li>
+            <li><span class="path">app/Services/Sri/SriXmlBuilder.php<span class="ln">:67-83</span></span><span class="why">Los totales con <code>bcadd</code>/<code>bcmul</code> — nunca floats. Regla de oro del proyecto con el dinero.</span></li>
+            <li><span class="path">tests/Unit/SriXmlBuilderTest.php</span><span class="why">Qué se comprueba del XML generado.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué los montos se calculan con <code>bcadd</code> y no con <code>+</code>?</summary>
+        <div class="ans"><p>Porque los números decimales en coma flotante no representan exactamente valores como 0,1 o 15,75: <code>0.1 + 0.2</code> da <code>0.30000000000000004</code>. En una factura eso se convierte en un céntimo de descuadre entre la suma de las líneas y el total — y el SRI valida esa coherencia y devuelve el comprobante. <code>bcmath</code> hace aritmética decimal exacta sobre strings. Por eso también los montos viajan como <strong>strings</strong> hasta el frontend, donde nunca se les hace <code>parseFloat</code>.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e06"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 07 ══════════════ -->
+    <section class="station" id="e07">
+      <div class="st-head"><span class="st-num">ESTACIÓN 07</span><h2>El XSD: revisar el XML antes de enviarlo</h2></div>
+      <p class="st-lede">Un paso corto pero muy inteligente. Ahorra viajes al SRI y, sobre todo, ahorra tiempo de diagnóstico.</p>
+
+      <p>
+        Un <strong>XSD</strong> es la plantilla oficial de un XML: dice qué etiquetas puede haber,
+        en qué orden, cuáles son obligatorias y de qué tipo es cada valor. El SRI publica los suyos.
+        Este proyecto los tiene <em>vendoreados</em> — copiados dentro del repo — en
+        <code>resources/sri/xsd/</code>.
+      </p>
+
+      <p>
+        Antes de firmar y enviar, el XML se valida contra su XSD localmente. Si está mal, se para
+        ahí. ¿Por qué molestarse, si el SRI también lo validaría?
+      </p>
+
+      <ul class="tight">
+        <li><strong>El SRI responde vago.</strong> Devuelve «DEVUELTA» con un mensaje genérico. <code>libxml</code>, en cambio, te dice la etiqueta y la línea exacta.</li>
+        <li><strong>Un error de esquema no se arregla reintentando.</strong> Es estructural. Por eso se convierte en <code>SriPermanentException</code> — la estación 11 explica qué significa eso.</li>
+        <li><strong>No gastas envíos.</strong> Cada envío al SRI es una petición real a un servicio público.</li>
+      </ul>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriXsdValidator.php<span class="ln">:26</span></span><span class="why"><code>validate()</code> — elige el esquema según la etiqueta raíz (<code>factura</code> o <code>notaCredito</code>) y acumula todos los errores en un solo mensaje.</span></li>
+            <li><span class="path">resources/sri/xsd/factura_V2.1.0.xsd</span><span class="why">El esquema oficial de factura. Ábrelo: es largo, pero verás las mismas etiquetas de la estación 06.</span></li>
+            <li><span class="path">resources/sri/xsd/NotaCredito_V1.1.0.xsd</span><span class="why">El de nota de crédito.</span></li>
+            <li><span class="path">resources/sri/xsd/xmldsig-core-schema.xsd</span><span class="why">El esquema de la firma digital — el de la estación 09.</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:265</span></span><span class="why">Donde el fallo de esquema se convierte en error <em>permanente</em>.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>El SRI publica una versión nueva del esquema de factura. ¿Qué hay que tocar?</summary>
+        <div class="ans"><p>Tres sitios, en este orden: (1) descargar el nuevo <code>.xsd</code> a <code>resources/sri/xsd/</code>; (2) actualizar el nombre del archivo en la constante <code>SCHEMAS</code> de <code>SriXsdValidator.php:18</code>; (3) actualizar <code>FACTURA_VERSION</code> en <code>SriXmlBuilder.php:21</code> y adaptar las etiquetas que hayan cambiado. Los tests unitarios de <code>SriXsdValidatorTest</code> y <code>SriXmlBuilderTest</code> te dirán qué se rompió.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e07"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 08 ══════════════ -->
+    <section class="station" id="e08">
+      <div class="st-head"><span class="st-num">ESTACIÓN 08</span><h2>El certificado <code>.p12</code>: la identidad criptográfica del emisor</h2></div>
+      <p class="st-lede">Aquí entra el mundo físico: hay que ir a comprar algo. Es la única pieza que el código no puede fabricar.</p>
+
+      <p>
+        Para que el SRI acepte un comprobante, tiene que venir <strong>firmado digitalmente</strong>
+        por el emisor. Firmar requiere una <em>clave privada</em>, y para que el SRI confíe en esa
+        clave, tiene que venir acompañada de un <strong>certificado</strong> emitido por una
+        autoridad acreditada en Ecuador — típicamente el <strong>BCE</strong> (Banco Central del
+        Ecuador), también Security Data o ANFAC. Cuesta del orden de 25 dólares y se tramita a
+        nombre de la persona o empresa.
+      </p>
+
+      <p>Lo que descargas es un archivo <code>.p12</code> (o <code>.pfx</code>). Dentro hay tres cosas:</p>
+
+      <ul class="tight">
+        <li><strong>La clave privada.</strong> El secreto. Con ella se firma. No sale nunca del servidor.</li>
+        <li><strong>El certificado público.</strong> Dice quién eres y contiene tu clave pública, con la que cualquiera puede <em>verificar</em> tu firma.</li>
+        <li><strong>La cadena de confianza.</strong> Los certificados de la autoridad que te lo emitió, que prueban que no te lo hiciste tú mismo.</li>
+      </ul>
+
+      <p>
+        Todo el archivo está protegido con contraseña. Abrirlo en PHP es una línea:
+      </p>
+
+      <pre><code><span class="cmt">// app/Services/Sri/SriCertificateLoader.php:29</span>
+if (! openssl_pkcs12_read($pkcs12, $certs, $password)) {
+    throw new RuntimeException('Could not open the SRI certificate. Check the password.');
+}</code></pre>
+
+      <h3>Cómo lo custodia este proyecto</h3>
+      <ul class="tight">
+        <li>El archivo va al disco <code>local</code> de Laravel, que es <strong>privado</strong> — no servido por el servidor web. Nunca al disco <code>public</code>.</li>
+        <li>La contraseña se guarda con el cast <code>'encrypted'</code> de Eloquent: cifrada en base de datos con la <code>APP_KEY</code>.</li>
+        <li>Ruta y contraseña están en <code>$hidden</code> del modelo <code>Workspace</code>: no salen por la API ni por error.</li>
+        <li>La API expone solo un booleano, <code>sri_certificate_uploaded</code>. El frontend sabe <em>si</em> hay certificado, nunca <em>cuál</em>.</li>
+        <li>Solo el dueño del workspace puede subirlo.</li>
+      </ul>
+
+      <div class="nota">
+        <span class="tag">No confundir dos firmas</span>
+        <p>
+          En Elosar hay <em>otra</em> cosa llamada «firma»: la imagen escaneada de la firma del
+          médico que va en las recetas. No tiene ninguna relación con esta. Una es un dibujo, la
+          otra es criptografía. El propio <code>ProfilePage.tsx</code> del frontend le explica la
+          diferencia al usuario, precisamente porque es una confusión frecuente.
+        </p>
+      </div>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriCertificateLoader.php<span class="ln">:18</span></span><span class="why">Abre el <code>.p12</code> y devuelve certificado, clave privada y extras.</span></li>
+            <li><span class="path">app/Http/Controllers/Api/SettingsController.php<span class="ln">:48</span></span><span class="why"><code>uploadCertificate()</code> — valida <code>mimes:p12,pfx</code>, borra el anterior, guarda en <code>sri/certificates</code> del disco privado.</span></li>
+            <li><span class="path">routes/api.php<span class="ln">:137</span></span><span class="why"><code>POST settings/certificate</code>, dentro del grupo restringido al dueño.</span></li>
+            <li><span class="path">app/Models/Workspace.php<span class="ln">:58-73</span></span><span class="why">El cast <code>encrypted</code> y la lista <code>$hidden</code>.</span></li>
+            <li><span class="path">medico-web/src/features/settings/SettingsPage.tsx<span class="ln">:254</span></span><span class="why">La tarjeta «Firma electrónica SRI (.p12)» que ve el médico.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>Si alguien roba una copia de la base de datos, ¿puede firmar facturas a nombre de la clínica?</summary>
+        <div class="ans"><p>Con solo la base de datos, no: le faltan dos cosas. El archivo <code>.p12</code> está en el <em>disco</em>, no en la base de datos, y la contraseña está cifrada con la <code>APP_KEY</code>, que vive en las variables de entorno. Necesitaría las tres piezas a la vez. Eso no es casualidad — es el motivo de que estén separadas. Y también el motivo de que la <code>APP_KEY</code> de producción no deba estar en ningún sitio junto a un respaldo de la base.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e08"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 09 ══════════════ -->
+    <section class="station" id="e09">
+      <div class="st-head"><span class="st-num">ESTACIÓN 09</span><h2>La firma XAdES-BES: el corazón del asunto</h2></div>
+      <p class="st-lede">Es la parte más difícil del proyecto entero. Va despacio: primero qué es firmar, luego qué es XAdES, luego el problema del huevo y la gallina.</p>
+
+      <h3>Qué es firmar digitalmente</h3>
+      <p>
+        Firmar no es dibujar tu nombre. Es esto: se calcula un <strong>resumen</strong> del
+        documento (un <em>hash</em>: una huella de longitud fija que cambia por completo si cambias
+        una sola coma) y ese resumen se <strong>cifra con tu clave privada</strong>. Cualquiera con
+        tu clave pública puede descifrarlo y comparar. Si coincide con el resumen que él mismo
+        calcula del documento, entonces dos cosas quedan probadas: el documento no se alteró, y lo
+        firmó quien tiene esa clave privada.
+      </p>
+
+      <h3>Qué es XAdES-BES</h3>
+      <p>
+        <strong>XML-DSig</strong> es el estándar de firmas dentro de un XML. <strong>XAdES</strong>
+        es una extensión europea que le añade lo que hace falta para que la firma tenga valor
+        legal: el momento de la firma, qué certificado se usó, su huella. <strong>BES</strong> es el
+        nivel más básico de XAdES. Es lo que el SRI exige.
+      </p>
+      <p>
+        La firma va <em>dentro</em> del propio XML de la factura (firma «enveloped»), como un bloque
+        <code>&lt;ds:Signature&gt;</code> al final. Y firma <strong>tres cosas a la vez</strong>:
+      </p>
+      <ul class="tight">
+        <li>El comprobante entero, referenciado como <code>#comprobante</code>.</li>
+        <li>El bloque <code>SignedProperties</code>: cuándo se firmó y con qué certificado.</li>
+        <li>El bloque <code>KeyInfo</code>: el certificado público, para que el verificador lo tenga a mano.</li>
+      </ul>
+
+      <h3>El problema del huevo y la gallina</h3>
+      <p>
+        Aquí está la dificultad real. La firma tiene que ir <em>dentro</em> del documento. Pero la
+        firma es un resumen <em>del documento</em>. Entonces: cuando calculas el resumen, ¿el
+        documento ya incluye la firma? No puede — todavía no existe. Y si la añades después, el
+        documento cambia y el resumen deja de valer.
+      </p>
+      <p>
+        La solución del estándar es la <em>transformación enveloped-signature</em>: al verificar, se
+        quita mentalmente el bloque de firma y se calcula el resumen de lo que queda. Este proyecto
+        lo implementa en <strong>dos fases</strong>, y está comentado en el archivo:
+      </p>
+
+      <pre><code><span class="cmt">// Fase 1 — SriXmlSigner.php:68</span>
+<span class="cmt">// El resumen del comprobante se toma ANTES de añadir la firma.</span>
+<span class="cmt">// Eso equivale exactamente a lo que hará el validador del SRI.</span>
+$compDigest = base64_encode(sha1($root-&gt;C14N(false, false), true));
+
+<span class="cmt">// Fase 2 — líneas 105-134</span>
+<span class="cmt">// Se inserta el esqueleto de la firma en el documento, y RECIÉN</span>
+<span class="cmt">// entonces se calculan los resúmenes de SignedProperties y KeyInfo</span>
+<span class="cmt">// y el valor de la firma, sobre los nodos tal como quedaron.</span></code></pre>
+
+      <p>
+        ¿Por qué importa tanto ese orden? Por una palabra: <strong>canonicalización</strong>
+        (<code>C14N</code>). Dos XML que a la vista son idénticos pueden diferir en bytes: espacios,
+        orden de atributos, prefijos de espacios de nombres. La canonicalización los normaliza a una
+        forma única. Pero un nodo canonicalizado <em>hereda los espacios de nombres del documento en
+        el que está</em>. Si calculas el resumen de <code>SignedProperties</code> antes de insertarlo
+        en el documento, hereda un contexto distinto, produce bytes distintos, y el SRI — que lo
+        recalcula ya insertado — obtiene otro resumen. Firma inválida, sin ningún mensaje útil que
+        explique por qué.
+      </p>
+
+      <div class="nota">
+        <span class="tag">Por qué SHA-1 y RSA-SHA1</span>
+        <p>
+          SHA-1 hoy se considera criptográficamente débil. Aquí no es una elección: es lo que la
+          ficha técnica del SRI exige. Cuando el estándar se actualice, se cambian las tres
+          constantes de <code>SriXmlSigner.php:29-31</code>. Es un buen ejemplo de una regla que hay
+          que documentar en el código para que nadie la «arregle» con buena intención.
+        </p>
+      </div>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriXmlSigner.php<span class="ln">:40</span></span><span class="why"><code>sign()</code> — el método completo, 95 líneas, con las dos fases marcadas con comentarios.</span></li>
+            <li><span class="path">app/Services/Sri/SriXmlSigner.php<span class="ln">:144</span></span><span class="why"><code>signatureSkeleton()</code> — el bloque <code>&lt;ds:Signature&gt;</code> literal. Léelo entero una vez: verás las tres referencias de las que hablamos.</span></li>
+            <li><span class="path">app/Services/Sri/SriXmlSigner.php<span class="ln">:263</span></span><span class="why"><code>formatIssuer()</code> — el nombre del emisor del certificado se escribe al estilo RFC 2253, del más específico al más general, porque así es como lo renderiza el stack de Java que usa el SRI. Un detalle así puede costar días.</span></li>
+            <li><span class="path">tests/Unit/SriXmlSignerTest.php</span><span class="why">El test criptográfico: genera certificados autofirmados en tiempo de ejecución y <strong>reproduce la validación del SRI</strong> sobre la firma producida. Es la prueba de que esto funciona sin depender de la red.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="block probar">
+        <div class="bhead">Míralo tú mismo</div>
+        <div class="bbody">
+          <pre><code><span class="cmt"># El test que verifica la firma de punta a punta, sin tocar el SRI</span>
+./vendor/bin/sail pest tests/Unit/SriXmlSignerTest.php</code></pre>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué el resumen del comprobante se puede calcular antes, pero el de <code>SignedProperties</code> no?</summary>
+        <div class="ans"><p>Porque llevan transformaciones distintas. La referencia al comprobante declara explícitamente la transformación <em>enveloped-signature</em>, que le dice al validador «quita el bloque de firma antes de calcular» — y eso es exactamente el estado del documento antes de insertarla, así que calcularlo antes da el resultado correcto. <code>SignedProperties</code> y <code>KeyInfo</code> <strong>no</strong> declaran ninguna transformación: se canonicalizan tal como aparecen en el documento final, heredando sus espacios de nombres. Por eso hay que insertarlos primero y medirlos después.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e09"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 10 ══════════════ -->
+    <section class="station" id="e10">
+      <div class="st-head"><span class="st-num">ESTACIÓN 10</span><h2>SOAP y los dos ambientes</h2></div>
+      <p class="st-lede">Cómo se le habla al SRI, y el error de configuración más peligroso de todo el sistema.</p>
+
+      <p>
+        El SRI no tiene una API REST moderna. Usa <strong>SOAP</strong>, un protocolo más antiguo
+        donde las peticiones y respuestas son XML con una envoltura estándar, y el servidor publica
+        un archivo <code>?wsdl</code> que describe qué operaciones existen. En PHP, la clase
+        <code>SoapClient</code> lee ese WSDL y te deja llamar los métodos como si fueran locales.
+      </p>
+
+      <p>El esquema del SRI se llama «offline» y tiene <strong>dos servicios</strong>, en dos pasos:</p>
+
+      <div class="flow">
+        <div class="flow-step"><div class="marker"><div class="dot">A</div><div class="rod"></div></div>
+          <div class="txt"><b>Recepción — <code>validarComprobante</code></b><span>Le entregas el XML firmado. Responde <code>RECIBIDA</code> (lo acepta para procesar) o <code>DEVUELTA</code> (lo rechaza de entrada, con mensajes).</span><em>SriSoapClient::send() · línea 28</em></div></div>
+        <div class="flow-step"><div class="marker"><div class="dot">B</div></div>
+          <div class="txt"><b>Autorización — <code>autorizacionComprobante</code></b><span>Le preguntas por la clave de acceso. Responde <code>AUTORIZADO</code>, <code>NO AUTORIZADO</code>, <code>RECHAZADA</code> o nada todavía — <code>EN PROCESAMIENTO</code>.</span><em>SriSoapClient::authorize() · línea 54</em></div></div>
+      </div>
+
+      <p>
+        «Offline» significa justo eso: la autorización <strong>no es inmediata</strong>. Entregas y
+        vuelves a preguntar. Por eso existe el estado <em>pendiente</em> y por eso el job reintenta.
+      </p>
+
+      <h3>Los dos ambientes</h3>
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>Ambiente</th><th>Servidor</th><th>Dígito en el XML</th><th>Qué significa</th></tr></thead>
+          <tbody>
+            <tr><td><code>test</code></td><td><code>celcer.sri.gob.ec</code></td><td><code>1</code></td><td>Pruebas. Autoriza de verdad, pero <strong>sin ninguna validez fiscal</strong>.</td></tr>
+            <tr><td><code>production</code></td><td><code>cel.sri.gob.ec</code></td><td><code>2</code></td><td>Producción. Comprobantes con validez legal.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="nota rojo">
+        <span class="tag">El bug que enseña más de todo el subsistema</span>
+        <p>
+          Durante un tiempo, la pantalla de Ajustes enviaba el <em>dígito</em> del ambiente
+          (<code>"1"</code> / <code>"2"</code>), mientras que el motor solo reconocía las palabras
+          (<code>"test"</code> / <code>"production"</code>). Un médico que elegía «Producción»
+          quedaba guardado como <code>"2"</code>, que no coincidía con ninguna rama: la clave de
+          acceso se construía con ambiente 1 y el cliente SOAP <em>caía por defecto</em> a celcer.
+        </p>
+        <p>
+          Resultado: la clínica creía estar facturando de verdad y estaba emitiendo comprobantes de
+          prueba, sin ningún valor fiscal, sin ninguna señal de alarma. Un desastre contable
+          silencioso.
+        </p>
+        <p>
+          Se arregló en tres capas a la vez, y ahí está la lección: (1) la API valida contra
+          <code>Workspace::SRI_ENVIRONMENTS</code>; (2) <code>sriAmbienteCode()</code> ahora
+          <strong>lanza excepción</strong> ante un valor desconocido en lugar de degradar a pruebas;
+          (3) <code>SriSoapClient::client()</code> <strong>eliminó el valor por defecto</strong> —
+          un ambiente desconocido revienta en vez de adivinar. Y una migración reparó las filas ya
+          guardadas mal, dejándolas en el lado seguro.
+        </p>
+      </div>
+
+      <pre><code><span class="cmt">// app/Services/Sri/SriSoapClient.php:109 — sin red de seguridad, a propósito</span>
+$base = self::ENDPOINTS[$environment] ?? throw new RuntimeException(
+    "Unknown SRI environment [{$environment}]. …"
+);</code></pre>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Services/Sri/SriSoapClient.php<span class="ln">:18</span></span><span class="why">Los dos endpoints, y nada más. Toda la superficie de red del subsistema cabe en cuatro líneas.</span></li>
+            <li><span class="path">app/Services/Sri/SriSoapClient.php<span class="ln">:66</span></span><span class="why">El caso <code>EntityNotFound</code>: si preguntas por la clave justo después de enviarla, el SRI lanza una excepción porque aún no la indexó. Eso <strong>no</strong> es un fallo de transporte — se traduce a «EN PROCESAMIENTO» y se reintenta.</span></li>
+            <li><span class="path">database/migrations/2026_07_16_000001_normalize_workspace_sri_environment.php</span><span class="why">La migración reparadora. Su <code>down()</code> está vacío a propósito: revertir reintroduciría el bug.</span></li>
+            <li><span class="path">app/Models/Workspace.php<span class="ln">:95</span></span><span class="why"><code>sriAmbienteCode()</code> con su excepción.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>La recepción responde <code>DEVUELTA</code> con el mensaje 43. El código sigue adelante en vez de marcar rechazo. ¿Por qué?</summary>
+        <div class="ans"><p>El identificador 43 significa «clave de acceso registrada»: el SRI ya recibió ese comprobante antes. Eso pasa cuando un reintento vuelve a enviar algo que ya había llegado. Marcarlo como rechazado sería falso — el comprobante está en el SRI, solo que ya no hace falta entregarlo otra vez. Así que se salta la recepción y se va directo a preguntar por la autorización. Es lo que hace <code>alreadyRegistered()</code> en <code>SriService.php:285</code>, y es lo que convierte el flujo en <strong>idempotente</strong>: reintentar no rompe nada.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e10"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 11 ══════════════ -->
+    <section class="station" id="e11">
+      <div class="st-head"><span class="st-num">ESTACIÓN 11</span><h2>Estados y reintentos: cómo el sistema aguanta que el SRI falle</h2></div>
+      <p class="st-lede">Todo lo anterior es el «camino feliz». Esta estación es lo que pasa cuando algo sale mal — que es la mitad del trabajo real.</p>
+
+      <p>Cada comprobante vive en uno de cuatro estados, en la columna <code>sri_status</code>:</p>
+
+      <div class="estados">
+        <div class="estado e-null"><b>null</b><span>Nunca se envió. El workspace no tiene SRI habilitado, o es un comprobante interno.</span></div>
+        <div class="estado e-pend"><b>pending</b><span>En camino. Enviado y esperando respuesta, o esperando el próximo reintento.</span></div>
+        <div class="estado e-auth"><b>authorized</b><span>Terminal y bueno. Tiene número y fecha de autorización. Ya no se toca.</span></div>
+        <div class="estado e-rej"><b>rejected</b><span>Terminal y malo. <code>sri_last_error</code> dice por qué. Requiere intervención.</span></div>
+      </div>
+
+      <h3>Dos clases de error, dos tratamientos</h3>
+      <p>
+        Esta es la decisión de diseño central del job, y vale para cualquier integración con un
+        servicio externo:
+      </p>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th></th><th>Permanente</th><th>Transitorio</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Qué es</strong></td><td>Configuración incompleta, XML que no valida contra el XSD, certificado que no abre.</td><td>El SRI está caído, se cortó la red, timeout.</td></tr>
+            <tr><td><strong>¿Reintentar ayuda?</strong></td><td>No. Mañana fallará igual.</td><td>Sí. En un minuto puede funcionar.</td></tr>
+            <tr><td><strong>Qué hace el job</strong></td><td>Marca <code>rejected</code> y llama a <code>fail()</code>: el job muere y queda en <code>failed_jobs</code>.</td><td>Deja <code>pending</code> y se vuelve a encolar con 60 s de retraso.</td></tr>
+            <tr><td><strong>Cómo se distingue</strong></td><td><code>SriPermanentException</code></td><td>Cualquier otro <code>Throwable</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        El presupuesto de reintentos es de <strong>10 intentos</strong>. Agotado, el comprobante
+        pasa a <code>rejected</code> con un mensaje explícito. Sin ese tope, un comprobante
+        imposible reintentaría para siempre.
+      </p>
+
+      <h3>Tres detalles que revelan cuidado</h3>
+      <ul class="tight">
+        <li><strong>Idempotencia:</strong> lo primero que hace el job es recargar el comprobante y salir si ya está <code>authorized</code> o <code>rejected</code>. Ejecutarlo dos veces no hace daño.</li>
+        <li><strong>Workspace suspendido:</strong> si la plataforma suspendió al workspace (por ejemplo, por fraude), el job se detiene sin marcar nada. No se sigue declarando ante la autoridad tributaria en nombre de alguien a quien acabas de bloquear. Queda <code>pending</code>: si lo reactivan, el siguiente intento sigue.</li>
+        <li><strong>Multi-tenancy en segundo plano:</strong> un job en cola <em>no tiene sesión</em>, y en este proyecto el aislamiento por workspace falla en cerrado — sin workspace activo, las consultas no devuelven nada o revientan. Por eso todo el <code>handle()</code> va envuelto en <code>ActiveWorkspace::runBound($workspace_id, …)</code>.</li>
+      </ul>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">app/Jobs/AuthorizeSriVoucherJob.php<span class="ln">:48</span></span><span class="why"><code>handle()</code> — todas las guardas, en orden. Lee el docblock de arriba: explica la estrategia completa en 15 líneas.</span></li>
+            <li><span class="path">app/Jobs/AuthorizeSriVoucherJob.php<span class="ln">:38-39</span></span><span class="why"><code>MAX_ATTEMPTS = 10</code>, <code>RETRY_DELAY_SECONDS = 60</code>.</span></li>
+            <li><span class="path">app/Jobs/AuthorizeSriVoucherJob.php<span class="ln">:129</span></span><span class="why"><code>failed()</code> — el último recurso: registra en el log con contexto y deja el comprobante coherente, sin pisar uno ya autorizado.</span></li>
+            <li><span class="path">app/Exceptions/Sri/SriPermanentException.php</span><span class="why">La excepción que marca la frontera entre los dos mundos.</span></li>
+            <li><span class="path">tests/Feature/Sri/AuthorizeSriVoucherJobTest.php</span><span class="why">Los tests de los reintentos y las guardas.</span></li>
+            <li><span class="path">app/Filament/SuperAdmin/Widgets/FailedJobsWidget.php</span><span class="why">Dónde se ven los jobs muertos desde el panel de superadmin.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="block probar">
+        <div class="bhead">Míralo tú mismo</div>
+        <div class="bbody">
+          <pre><code><span class="cmt"># Los tests del job y del reenvío</span>
+./vendor/bin/sail pest tests/Feature/Sri/
+
+<span class="cmt"># Reencolar todo lo rechazado (en el entorno que sea)</span>
+./vendor/bin/sail artisan sri:resend --status=rejected,pending</code></pre>
+        </div>
+      </div>
+
+      <details class="check"><summary>Un comprobante lleva 40 minutos en <code>pending</code> con el mensaje «En procesamiento por el SRI». ¿Es un bug?</summary>
+        <div class="ans"><p>No necesariamente: el esquema es offline y el SRI puede tardar. Con 10 intentos cada 60 segundos, la ventana de reintentos es de unos 10 minutos, así que a los 40 el job probablemente ya agotó su presupuesto y el comprobante habrá pasado a <code>rejected</code> por tope de intentos. Lo que harías es mirar <code>sri_last_error</code> para distinguir «seguía en procesamiento» de un error real, y relanzarlo con <code>sri:resend --status=rejected</code>. Si el patrón se repite, la conversación correcta es sobre <code>MAX_ATTEMPTS</code> y <code>RETRY_DELAY_SECONDS</code> — quizá 10 minutos de ventana sea poco para el comportamiento real del SRI.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e11"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 12 ══════════════ -->
+    <section class="station" id="e12">
+      <div class="st-head"><span class="st-num">ESTACIÓN 12</span><h2>El RIDE y la retención legal</h2></div>
+      <p class="st-lede">Volvemos al papel, que es lo único que el paciente ve. Y a una regla que impide borrar.</p>
+
+      <p>
+        El <strong>RIDE</strong> es el PDF. Cuando la factura está autorizada, el sistema le añade
+        un bloque con los datos fiscales y un <strong>código QR</strong>. Ese QR contiene la clave de
+        acceso: cualquiera puede escanearlo y consultar el comprobante en el portal del SRI para
+        comprobar que es auténtico.
+      </p>
+
+      <p>
+        El PDF distingue tres situaciones, y esa honestidad es parte del producto:
+      </p>
+      <ul class="tight">
+        <li><strong>Autorizado:</strong> bloque azul con «AUTORIZADO POR EL SRI», número y fecha de autorización, clave de acceso completa, QR, y el ambiente en letra clara — <code>PRODUCCIÓN</code> o <code>PRUEBAS</code>.</li>
+        <li><strong>SRI no habilitado:</strong> sello «DOCUMENTO INTERNO». No pretende ser una factura.</li>
+        <li><strong>Pendiente o rechazado:</strong> ni bloque ni QR, porque no hay autorización que mostrar.</li>
+      </ul>
+
+      <h3>Lo que no se puede borrar</h3>
+      <p>
+        La ley ecuatoriana obliga a conservar los comprobantes electrónicos <strong>siete
+        años</strong>. El proyecto lo hace cumplir en el propio modelo: un trait que intercepta el
+        borrado definitivo y lo bloquea si el comprobante está autorizado. Se puede borrar «suave»
+        (la fila sobrevive y se recupera), nunca de forma permanente. Para revertir uno autorizado
+        está la nota de crédito, que es la vía legal.
+      </p>
+
+      <pre><code><span class="cmt">// app/Models/Concerns/GuardsSriRetention.php:22</span>
+static::forceDeleting(function ($voucher) {
+    if ($voucher-&gt;sri_status === 'authorized') {
+        throw new RuntimeException('No se puede eliminar definitivamente…');
+    }
+});</code></pre>
+
+      <div class="block ficha">
+        <div class="bhead">Dónde vive</div>
+        <div class="bbody">
+          <ul class="files">
+            <li><span class="path">resources/views/invoices/invoice.blade.php<span class="ln">:158-190</span></span><span class="why">El bloque RIDE. Fíjate en el <code>@elseif (!$workspace?-&gt;sri_enabled)</code> que imprime «DOCUMENTO INTERNO».</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:115</span></span><span class="why"><code>qrDataUri()</code> — genera el QR con <code>endroid/qr-code</code> y lo devuelve como data-URI en base64, porque <strong>dompdf no puede leer rutas del sistema de archivos</strong>. Es la regla de PDFs de todo el proyecto.</span></li>
+            <li><span class="path">app/Services/Sri/SriService.php<span class="ln">:106</span></span><span class="why"><code>consultaUrl()</code> — la URL pública del SRI para consultar por clave de acceso.</span></li>
+            <li><span class="path">app/Services/InvoiceService.php<span class="ln">:277</span></span><span class="why">Donde el QR se añade al PDF, solo si <code>isSriAuthorized()</code>.</span></li>
+            <li><span class="path">app/Models/Concerns/GuardsSriRetention.php</span><span class="why">La retención de 7 años, aplicada a <code>Invoice</code> y <code>CreditNote</code>.</span></li>
+            <li><span class="path">tests/Feature/SoftDeletesRetentionTest.php</span><span class="why">El test que lo demuestra.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="check"><summary>¿Por qué el RIDE imprime el ambiente («PRUEBAS» / «PRODUCCIÓN») en el papel?</summary>
+        <div class="ans"><p>Porque un comprobante autorizado en pruebas se ve <em>exactamente igual</em> que uno real: tiene número de autorización, fecha y QR. Sin esa etiqueta, nadie —ni el médico ni el paciente ni el contador— podría notar la diferencia hasta el momento de la declaración. Imprimirlo es la última red de seguridad contra el mismo problema de la estación 10, esta vez en un sitio donde un humano lo va a ver.</p></div>
+      </details>
+
+      <label class="mark"><input type="checkbox" data-mark="e12"> Entendida esta estación</label>
+    </section>
+
+    <!-- ══════════════ 13 ══════════════ -->
+    <section class="station" id="e13">
+      <div class="st-head"><span class="st-num">ESTACIÓN 13</span><h2>Cómo probarlo hoy, y qué es lo único que falta</h2></div>
+      <p class="st-lede">Estado real del subsistema, sin adornos, y las herramientas que tienes para tocarlo.</p>
+
+      <h3>El pipeline autoriza</h3>
+      <p>
+        El <strong>31 de julio de 2026</strong>, con el certificado real de un médico, el SRI
+        <strong>autorizó</strong> un comprobante emitido por Elosar contra
+        <code>celcer.sri.gob.ec</code>. Recepción <code>RECIBIDA</code>, autorización
+        <code>AUTORIZADO</code>, número de autorización devuelto. El circuito completo, cerrado.
+      </p>
+      <p>
+        Llegar ahí costó resolver tres cosas que solo aparecen con un certificado de verdad, y que
+        conviene conocer porque vuelven si alguien las deshace:
+      </p>
+      <ul class="tight">
+        <li>
+          <strong>El <code>X509IssuerName</code>.</strong> El SRI valida con Java, que solo conoce
+          nueve palabras clave de RFC 2253. El atributo <code>organizationIdentifier</code> —que
+          traen todos los certificados de UANATACA— tiene que escribirse como
+          <code>2.5.4.97=#0c0f…</code>: el OID numérico y el valor en hexadecimal del DER. Con su
+          nombre largo, el SRI responde <strong>39 FIRMA INVALIDA</strong> aunque la firma sea
+          criptográficamente perfecta.
+        </li>
+        <li>
+          <strong>El proveedor legacy de OpenSSL 3.</strong> Los <code>.p12</code> de las CA
+          ecuatorianas van cifrados con RC2-40, que OpenSSL 3 no carga por defecto. Sin activarlo,
+          <em>ningún</em> certificado real se puede ni abrir — mientras los autofirmados de prueba
+          funcionan perfectamente. Por eso pasó desapercibido tanto tiempo.
+        </li>
+        <li>
+          <strong>La validación de la subida.</strong> <code>mimes:p12,pfx</code> adivina el tipo
+          por contenido y los <code>.p12</code> se detectan como binario genérico, así que rechazaba
+          los certificados válidos.
+        </li>
+      </ul>
+
+      <div class="nota">
+        <span class="tag">Lo que falta para producción</span>
+        <p>
+          El <strong>volumen persistente</strong> de Railway montado en
+          <code>/var/www/html/storage/app</code>. Sin él, el <code>.p12</code> del médico se borra en
+          cada despliegue y las facturas empiezan a fallar sin motivo aparente. Y el paso de
+          <code>Pruebas</code> a <code>Producción</code>, que es una decisión del contribuyente, no
+          una tarea técnica.
+        </p>
+      </div>
+
+      <h3>Tus herramientas</h3>
+
+      <div class="block probar">
+        <div class="bhead">Diagnóstico paso a paso</div>
+        <div class="bbody">
+          <p style="margin-top:0;font-size:14.5px;color:var(--ink-2);">
+            <code>sri:check</code> ejecuta cada paso verificable localmente — configuración,
+            certificado, XML, XSD, firma, conectividad — y te dice cuál falla. Con
+            <code>--send</code> envía de verdad la última factura al ambiente de pruebas.
+          </p>
+          <pre><code>./vendor/bin/sail artisan sri:check 1
+./vendor/bin/sail artisan sri:check 1 --send   <span class="cmt"># solo en ambiente test</span></code></pre>
+        </div>
+      </div>
+
+      <div class="block probar">
+        <div class="bhead">La suite de tests</div>
+        <div class="bbody">
+          <pre><code><span class="cmt"># Unitarios: clave, XML, XSD, firma — no tocan la red</span>
+./vendor/bin/sail pest tests/Unit/SriClaveAccesoBuilderTest.php
+./vendor/bin/sail pest tests/Unit/SriXmlBuilderTest.php
+./vendor/bin/sail pest tests/Unit/SriXsdValidatorTest.php
+./vendor/bin/sail pest tests/Unit/SriXmlSignerTest.php
+
+<span class="cmt"># De integración interna: job, reenvío, unicidad, autorización</span>
+./vendor/bin/sail pest tests/Feature/Sri/</code></pre>
+          <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:0;">
+            <code>tests/Feature/Sri/SriIntegrationTest.php</code> es el único que se salta: espera a
+            que existan <code>SRI_TEST_CERTIFICATE_PATH</code>,
+            <code>SRI_TEST_CERTIFICATE_PASSWORD</code> y <code>SRI_TEST_RUC</code> en el entorno.
+            El día que llegue el certificado, ese es el test que hay que correr.
+          </p>
+        </div>
+      </div>
+
+      <h3>El mapa completo, concepto por archivo</h3>
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>Concepto</th><th>Archivo</th></tr></thead>
+          <tbody>
+            <tr><td>Identidad fiscal del emisor</td><td><code>app/Models/Workspace.php</code></td></tr>
+            <tr><td>Disparador automático</td><td><code>app/Services/InvoiceService.php</code></td></tr>
+            <tr><td>Orquestador del flujo</td><td><code>app/Services/Sri/SriService.php</code></td></tr>
+            <tr><td>Clave de acceso + módulo 11</td><td><code>app/Services/Sri/SriClaveAccesoBuilder.php</code></td></tr>
+            <tr><td>Construcción del XML</td><td><code>app/Services/Sri/SriXmlBuilder.php</code></td></tr>
+            <tr><td>Validación contra XSD</td><td><code>app/Services/Sri/SriXsdValidator.php</code></td></tr>
+            <tr><td>Lectura del certificado</td><td><code>app/Services/Sri/SriCertificateLoader.php</code></td></tr>
+            <tr><td>Firma XAdES-BES</td><td><code>app/Services/Sri/SriXmlSigner.php</code></td></tr>
+            <tr><td>Transporte SOAP</td><td><code>app/Services/Sri/SriSoapClient.php</code></td></tr>
+            <tr><td>Reintentos y estados</td><td><code>app/Jobs/AuthorizeSriVoucherJob.php</code></td></tr>
+            <tr><td>RIDE (PDF con QR)</td><td><code>resources/views/invoices/invoice.blade.php</code></td></tr>
+            <tr><td>Retención 7 años</td><td><code>app/Models/Concerns/GuardsSriRetention.php</code></td></tr>
+            <tr><td>Diagnóstico y reenvío</td><td><code>app/Console/Commands/SriCheckCommand.php</code>, <code>SriResendCommand.php</code></td></tr>
+            <tr><td>Configuración del médico</td><td><code>medico-web/src/features/settings/SettingsPage.tsx</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="nota">
+        <span class="tag">Si quieres seguir</span>
+        <p>
+          El documento de referencia del repo,
+          <code>docs/sri/documentacion-facturacion-electronica-sri.md</code>, entra más a fondo en
+          la teoría de XML, XAdES y el esquema offline, y trae un glosario. El agente
+          <code>billing-engineer</code> es el que conoce este dominio cuando haya que tocarlo.
+        </p>
+      </div>
+
+      <label class="mark"><input type="checkbox" data-mark="e13"> Entendida esta estación</label>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Tema ─────────────────────────────────────────────── */
+  var root = document.documentElement;
+  document.getElementById('tbtn').addEventListener('click', function () {
+    var current = root.getAttribute('data-theme');
+    if (!current) {
+      current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    root.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ── Progreso ─────────────────────────────────────────── */
+  var KEY = 'elosar-sri-curso-v1';
+  var marks = {};
+  try { marks = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { marks = {}; }
+
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('[data-mark]'));
+  var total = boxes.length;
+  var fill = document.getElementById('pf');
+  var label = document.getElementById('pl');
+
+  function paint() {
+    var done = 0;
+    boxes.forEach(function (b) {
+      var id = b.getAttribute('data-mark');
+      var link = document.querySelector('#toc a[data-st="' + id + '"]');
+      if (marks[id]) { done++; if (link) link.classList.add('done'); }
+      else if (link) { link.classList.remove('done'); }
+    });
+    fill.style.width = (total ? (done / total) * 100 : 0) + '%';
+    label.textContent = done + ' de ' + total + ' estaciones';
+  }
+
+  boxes.forEach(function (b) {
+    var id = b.getAttribute('data-mark');
+    b.checked = !!marks[id];
+    b.addEventListener('change', function () {
+      marks[id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(marks)); } catch (e) { /* sin persistencia */ }
+      paint();
+    });
+  });
+  paint();
+
+  /* ── Desarmador de clave de acceso ────────────────────── */
+  var CAMPOS = [
+    [8,  'Fecha de emisión (ddmmaaaa)'],
+    [2,  'Tipo de comprobante (01 factura · 04 nota de crédito)'],
+    [13, 'RUC del emisor'],
+    [1,  'Ambiente (1 pruebas · 2 producción)'],
+    [6,  'Serie: establecimiento + punto de emisión'],
+    [9,  'Secuencial'],
+    [8,  'Código numérico (aleatorio)'],
+    [1,  'Tipo de emisión (1 normal)']
+  ];
+
+  function mod11(d48) {
+    var weights = [2, 3, 4, 5, 6, 7];
+    var sum = 0, w = 0;
+    for (var i = d48.length - 1; i >= 0; i--) {
+      sum += parseInt(d48.charAt(i), 10) * weights[w];
+      w = (w + 1) % weights.length;
+    }
+    var check = 11 - (sum % 11);
+    if (check === 11) return '0';
+    if (check === 10) return '1';
+    return String(check);
+  }
+
+  var input = document.getElementById('clave');
+  var segsEl = document.getElementById('segs');
+  var verdictEl = document.getElementById('verdict');
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function render() {
+    var raw = (input.value || '').replace(/\D/g, '');
+    segsEl.innerHTML = '';
+    var pos = 0;
+
+    CAMPOS.forEach(function (campo) {
+      var len = campo[0], lbl = campo[1];
+      var val = raw.substr(pos, len);
+      pos += len;
+      var div = document.createElement('div');
+      div.className = 'seg';
+      div.innerHTML = '<span class="sv">' + esc(val || '—') + '</span><span class="sl">' + esc(lbl) + '</span>';
+      segsEl.appendChild(div);
+    });
+
+    var dvGiven = raw.substr(48, 1);
+    var dvDiv = document.createElement('div');
+    dvDiv.className = 'seg hl';
+    dvDiv.innerHTML = '<span class="sv">' + esc(dvGiven || '—') + '</span><span class="sl">Dígito verificador</span>';
+    segsEl.appendChild(dvDiv);
+
+    if (raw.length !== 49) {
+      verdictEl.className = 'verdict bad';
+      verdictEl.textContent = 'Tiene ' + raw.length + ' dígitos. Una clave de acceso tiene exactamente 49.';
+      return;
+    }
+
+    var expected = mod11(raw.substr(0, 48));
+    if (expected === dvGiven) {
+      verdictEl.className = 'verdict good';
+      verdictEl.innerHTML = 'Clave válida. El módulo 11 sobre los primeros 48 dígitos da <b>' + esc(expected) + '</b>, que es el dígito 49.';
+    } else {
+      verdictEl.className = 'verdict bad';
+      verdictEl.innerHTML = 'Clave inválida. El módulo 11 exige <b>' + esc(expected) + '</b> y aquí dice <b>' + esc(dvGiven) + '</b>. El SRI la rechazaría.';
+    }
+  }
+
+  input.addEventListener('input', render);
+  render();
+})();
+</script>

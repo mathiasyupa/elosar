@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f3f5fa">
+<title>Elo atrapa · Elosar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Elosar's default theme («serene», light) — the same tokens as
+     medico-web/src/index.css, copied because this page stands alone (it has to
+     open offline at the stand, without the app's stylesheet). */
+  :root {
+    --accent: #496fd8;
+    --accent-600: #3c5fc2;
+    --accent-700: #2f4c9d;
+    --accent-soft: #e9eeff;
+    --accent-grad: linear-gradient(135deg, #53c9c0, #496fd8);
+    --bg: #f3f5fa;
+    --surface: #ffffff;
+    --surface-2: #f7f8fc;
+    --border: #8095c0;
+    --border-control: #6081b0;
+    --divider: #e1e6f0;
+    --text: #18243a;
+    --text-2: #4b5870;
+    --text-3: #6e7a91;
+    --green: #2f8a5e;   --green-soft: #dcf2e5;
+    --amber: #a06d1c;   --amber-soft: #f8ecd4;
+    --red: #b3261e;     --red-soft: #ffdad6;
+    --on-accent: #ffffff;
+    --shadow-sm: 0 1px 2px rgba(13, 33, 30, .06);
+    --shadow: 0 4px 20px rgba(13, 33, 30, .06);
+    --shadow-lg: 0 12px 32px rgba(15, 118, 110, .16);
+    --r-sm: 12px; --r: 20px; --r-lg: 28px; --r-pill: 999px;
+    --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+  body {
+    font-family: var(--font); color: var(--text); -webkit-font-smoothing: antialiased;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  #stage { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+
+  /* ---- HUD ---- */
+  .hud {
+    position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
+    align-items: center; gap: 12px; padding: 14px 16px; pointer-events: none;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    background: var(--surface); border: 1px solid var(--divider); border-radius: var(--r-pill);
+    box-shadow: var(--shadow); font-weight: 700; font-size: clamp(16px, 2.6vw, 22px); color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip small { font-size: .62em; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
+  .chip.bonus { background: var(--accent-grad); border-color: transparent; color: var(--on-accent); }
+  .mute {
+    position: fixed; bottom: 14px; right: 14px; z-index: 5; width: 42px; height: 42px; cursor: pointer;
+    border: 1px solid var(--divider); border-radius: var(--r-sm); background: var(--surface);
+    box-shadow: var(--shadow-sm); color: var(--text-2); font: 600 13px var(--font);
+  }
+
+  /* ---- Pantallas ---- */
+  .screen {
+    position: fixed; inset: 0; z-index: 4; display: none; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(243, 245, 250, .78); backdrop-filter: blur(6px);
+  }
+  .screen.on { display: flex; }
+  .card {
+    width: min(500px, 100%); max-height: 100%; overflow: auto; background: var(--surface);
+    border: 1px solid var(--divider); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  }
+  .card-band { height: 6px; background: var(--accent-grad); border-radius: var(--r-lg) var(--r-lg) 0 0; }
+  .card-pad { padding: 26px 26px 22px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;
+    color: var(--accent-700); background: var(--accent-soft); padding: 5px 12px; border-radius: var(--r-pill);
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  .hero { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+  .hero h1 { margin: 0; font-size: clamp(30px, 6vw, 40px); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+  .hero p { margin: 6px 0 0; color: var(--text-2); font-size: 15px; line-height: 1.45; }
+  .goal {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 4px;
+    padding: 14px 16px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--divider);
+  }
+  .goal b { font-size: 17px; }
+  .goal span { color: var(--text-2); font-size: 13px; }
+  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 6px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm);
+    border: 1px solid var(--divider); font-size: 14px; font-weight: 600;
+  }
+  .legend-item canvas { width: 30px; height: 30px; flex-shrink: 0; }
+  .legend-item em { margin-left: auto; font-style: normal; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .legend-item.good em { color: var(--green); }
+  .legend-item.bad em { color: var(--red); }
+  .how { color: var(--text-3); font-size: 13px; line-height: 1.5; margin: 12px 0 0; }
+  .how b { color: var(--text-2); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 18px;
+    padding: 15px 20px; border-radius: 13px; border: 1px solid var(--accent); background: var(--accent);
+    color: var(--on-accent); font: 700 17px var(--font); cursor: pointer; box-shadow: var(--shadow-sm);
+    transition: background .14s, transform .14s;
+  }
+  .btn:hover { background: var(--accent-600); border-color: var(--accent-600); }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: var(--surface); color: var(--text); border-color: var(--border-control); }
+  .btn.ghost:hover { background: var(--surface-2); }
+
+  .result { text-align: center; }
+  .result h2 { margin: 12px 0 0; font-size: 22px; font-weight: 700; color: var(--text-2); }
+  .score-big {
+    font-size: clamp(64px, 15vw, 104px); font-weight: 800; letter-spacing: -.03em; line-height: 1; margin: 8px 0 4px;
+    background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-label { color: var(--text-3); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .win {
+    margin: 16px 0 4px; padding: 16px; border-radius: var(--r); background: var(--accent-grad); color: var(--on-accent);
+    font-size: clamp(22px, 5vw, 30px); font-weight: 800; letter-spacing: -.01em; animation: pop .5s ease-out;
+  }
+  .win small { display: block; font-size: 14px; font-weight: 600; opacity: .9; margin-top: 2px; }
+  .near { margin: 14px 0 4px; padding: 12px; border-radius: var(--r-sm); background: var(--surface-2); color: var(--text-2); font-size: 15px; }
+  .near b { color: var(--text); }
+  @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+  .nick { display: flex; gap: 8px; margin: 16px 0 0; }
+  .nick input {
+    flex: 1; min-width: 0; padding: 12px 14px; border-radius: var(--r-sm); border: 1px solid var(--border-control);
+    background: var(--surface-2); font: 500 16px var(--font); color: var(--text); outline: none;
+  }
+  .nick input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .nick .btn { width: auto; margin: 0; padding: 12px 18px; font-size: 15px; }
+
+  .board { width: 100%; margin-top: 16px; border-collapse: collapse; font-size: 14px; text-align: left; }
+  .board caption { text-align: left; font-weight: 700; font-size: 13px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; padding-bottom: 6px; }
+  .board td { padding: 8px 10px; }
+  .board tr:nth-child(even) td { background: var(--surface-2); }
+  .board td:first-child { width: 2.2em; color: var(--text-3); font-weight: 700; }
+  .board td:last-child { text-align: right; font-weight: 700; color: var(--accent-700); font-variant-numeric: tabular-nums; }
+  .board tr.me td { background: var(--accent-soft); }
+
+  .brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; color: var(--text-3); font-size: 13px; }
+  .brand b { color: var(--text); font-weight: 700; }
+  .brand i { width: 4px; height: 4px; border-radius: 50%; background: var(--divider); }
+  .admin { display: none; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--divider); font-size: 13px; color: var(--text-2); }
+  .admin.on { display: block; }
+  .admin button {
+    margin: 4px 4px 0 0; padding: 7px 12px; border-radius: 11px; border: 1px solid var(--border-control);
+    background: var(--surface); font: 600 12px var(--font); color: var(--text); cursor: pointer;
+  }
+  .admin button.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  /* Short screens (a laptop with the browser bar showing): the start card fits without scrolling. */
+  @media (max-height: 720px) {
+    .card-pad { padding: 18px 22px 16px; }
+    .hero { margin-top: 10px; }
+    .hero canvas { width: 72px; height: 72px; }
+    .goal { margin: 12px 0 2px; padding: 10px 14px; }
+    .legend { margin: 10px 0 4px; gap: 6px; }
+    .legend-item { padding: 6px 10px; }
+    .how { margin-top: 8px; }
+    .btn { margin-top: 12px; padding: 12px 18px; }
+    .brand { margin-top: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .win { animation: none; } .btn { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <span class="chip"><small>Puntos</small><span id="hudScore">0</span></span>
+  <span class="chip bonus" id="hudCombo" hidden>Racha ×2</span>
+  <span class="chip"><small>Tiempo</small><span id="hudTime">40</span></span>
+</div>
+<button class="mute" id="mute" aria-label="Silenciar">Son</button>
+
+<!-- Inicio -->
+<div class="screen on" id="start">
+  <div class="card">
+    <div class="card-band"></div>
+    <div class="card-pad">
+      <span class="kicker">Elosar · Minijuego</span>
+      <div class="hero">
+        <canvas id="startElo" width="96" height="96" aria-hidden="true"></canvas>
+        <div>
+          <h1>Elo atrapa</h1>
+          <p>Atrapa lo que cuida tu salud y esquiva los virus. Tienes 40 segundos.</p>
+        </div>
+      </div>
+      <div class="goal"><b id="goalLabel">700 puntos</b><span>= una galleta 🍪</span></div>
+      <div class="legend" id="legend"></div>
+      <p class="how">Muévete con <b>← →</b>, con el <b>mouse</b> o arrastrando el <b>dedo</b>. Cinco seguidas sin errores = <b>puntos ×2</b>.</p>
+      <button class="btn" id="play">Jugar</button>
+      <table class="board" id="boardStart"></table>
+      <div class="brand"><b>Elosar</b><i></i>tu clínica, en orden<i></i>elosar.site</div>
+    </div>
+  </div>
+</div>
+
+<!-- Fin -->
+<div class="screen" id="end">
+  <div class="card">
+    <div class="card-band"></div>
+    <div class="card-pad result">
+      <span class="kicker">Resultado</span>
+      <h2 id="endTitle">Se acabó el tiempo</h2>
+      <div class="score-big" id="endScore">0</div>
+      <div class="score-label">puntos</div>
+      <div id="endPrize"></div>
+      <form class="nick" id="nickForm">
+        <input id="nick" maxlength="14" placeholder="Tu apodo para los récords" autocomplete="off" aria-label="Tu apodo">
+        <button class="btn" type="submit">Guardar</button>
+      </form>
+      <table class="board" id="boardEnd"></table>
+      <button class="btn" id="again">Jugar otra vez</button>
+      <div class="brand"><b>Elosar</b><i></i>tu clínica, en orden<i></i>elosar.site</div>
+      <div class="admin" id="admin">
+        <b>Modo stand</b> · meta:
+        <div id="goalButtons"></div>
+        <button id="clearBoard">Borrar récords de hoy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Config ────────────────────────────────────────────────────────────────
+  const GAME_SECONDS = 40;
+  const STREAK_FOR_BONUS = 5;
+  const BONUS_SECONDS = 6;
+  const DEFAULT_GOAL = 700;
+  const GOAL_OPTIONS = [300, 500, 700, 800, 1000, 1500];
+  const STORE = 'elo-atrapa';
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Elosar's palette (index.css, default theme) for everything drawn on the canvas.
+  const C = {
+    accent: '#496fd8', accent700: '#2f4c9d', soft: '#e9eeff', teal: '#53c9c0',
+    bg: '#f3f5fa', surface: '#ffffff', surface2: '#f7f8fc', divider: '#e1e6f0',
+    text: '#18243a', text3: '#6e7a91',
+    green: '#2f8a5e', greenSoft: '#dcf2e5', red: '#b3261e', redSoft: '#ffdad6',
+    amber: '#a06d1c', amberSoft: '#f8ecd4', gold: '#e9b949',
+  };
+
+  const ITEMS = [
+    { kind: 'pill',   label: 'Pastilla', good: true,  points: 10,  weight: 34 },
+    { kind: 'heart',  label: 'Corazón',  good: true,  points: 20,  weight: 20 },
+    { kind: 'rx',     label: 'Receta',   good: true,  points: 30,  weight: 12 },
+    { kind: 'star',   label: 'Estrella', good: true,  points: 100, weight: 3 },
+    { kind: 'virus',  label: 'Virus',    good: false, points: -30, weight: 34 },
+    { kind: 'papers', label: 'Papeles',  good: false, points: -15, weight: 22 },
+  ];
+  const TOTAL_WEIGHT = ITEMS.reduce((sum, item) => sum + item.weight, 0);
+
+  // ── Storage (memory fallback when the browser blocks it) ───────────────────
+  const memory = new Map();
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(`${STORE}:${key}`); if (v !== null) return JSON.parse(v); } catch { /* sin almacenamiento */ }
+      return memory.has(key) ? memory.get(key) : fallback;
+    },
+    set(key, value) {
+      memory.set(key, value);
+      try { localStorage.setItem(`${STORE}:${key}`, JSON.stringify(value)); } catch { /* sin almacenamiento */ }
+    },
+  };
+  let goal = store.get('goal2', DEFAULT_GOAL);
+  const today = new Date().toISOString().slice(0, 10);
+  const loadBoard = () => {
+    const saved = store.get('board', null);
+    // Records are per day: tomorrow's stand starts with an empty board.
+    return saved && saved.day === today && Array.isArray(saved.rows) ? saved.rows : [];
+  };
+  const saveBoard = (rows) => store.set('board', { day: today, rows });
+
+  // ── DOM ─────────────────────────────────────────────────────────────────────
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('stage');
+  const ctx = canvas.getContext('2d');
+  const hud = $('hud');
+
+  // ── Sound (tiny WebAudio blips, no files) ─────────────────────────────────
+  let muted = store.get('muted', false);
+  let audio = null;
+  const blip = (freq, duration = 0.08, type = 'sine', volume = 0.07) => {
+    if (muted) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(); osc.stop(audio.currentTime + duration);
+    } catch { /* sin audio */ }
+  };
+  const updateMute = () => { $('mute').textContent = muted ? 'Mudo' : 'Son'; $('mute').setAttribute('aria-label', muted ? 'Activar sonido' : 'Silenciar'); };
+  $('mute').addEventListener('click', () => { muted = !muted; store.set('muted', muted); updateMute(); });
+  updateMute();
+
+  // ── Shapes ──────────────────────────────────────────────────────────────────
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+
+  /**
+   * A falling item: a flat icon in Elosar's colours inside a round badge —
+   * green ring when it adds, red when it takes away — so it reads at a glance
+   * from across the stand. Drawn on a box of `size` centred on (0,0).
+   */
+  function drawItem(c, kind, size) {
+    const r = size / 2;
+    const good = kind !== 'virus' && kind !== 'papers';
+    // badge
+    c.fillStyle = C.surface;
+    c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill();
+    c.lineWidth = Math.max(2, size * 0.06);
+    c.strokeStyle = kind === 'star' ? C.gold : good ? C.green : C.red;
+    c.stroke();
+    c.save();
+    c.scale(size / 64, size / 64); // icons drawn on a 64-unit box
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    switch (kind) {
+      case 'pill': {
+        c.rotate(-Math.PI / 4);
+        roundRect(c, -18, -8, 36, 16, 8); c.fillStyle = C.surface; c.fill();
+        c.save(); roundRect(c, -18, -8, 36, 16, 8); c.clip();
+        c.fillStyle = C.accent; c.fillRect(-18, -8, 18, 16); c.restore();
+        roundRect(c, -18, -8, 36, 16, 8); c.lineWidth = 2.5; c.strokeStyle = C.accent700; c.stroke();
+        break;
+      }
+      case 'heart': {
+        c.fillStyle = C.teal;
+        c.beginPath();
+        c.moveTo(0, 15);
+        c.bezierCurveTo(-24, 0, -17, -20, 0, -9);
+        c.bezierCurveTo(17, -20, 24, 0, 0, 15);
+        c.fill();
+        c.strokeStyle = C.surface; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(-9, -1); c.lineTo(-3, -1); c.lineTo(0, -6); c.lineTo(3, 4); c.lineTo(6, -1); c.lineTo(10, -1); c.stroke();
+        break;
+      }
+      case 'rx': {
+        roundRect(c, -14, -18, 28, 36, 5); c.fillStyle = C.surface; c.fill();
+        c.lineWidth = 2.5; c.strokeStyle = C.accent; c.stroke();
+        c.fillStyle = C.accent; roundRect(c, -14, -18, 28, 9, 4); c.fill();
+        c.fillStyle = C.accent700; c.font = '700 12px Inter, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('Rx', 0, 1);
+        c.strokeStyle = C.divider; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(-8, 10); c.lineTo(8, 10); c.stroke();
+        break;
+      }
+      case 'star': {
+        c.fillStyle = C.gold; c.strokeStyle = C.amber; c.lineWidth = 2;
+        c.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const a = -Math.PI / 2 + (i * Math.PI) / 5;
+          const rr = i % 2 === 0 ? 19 : 8;
+          c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+        }
+        c.closePath(); c.fill(); c.stroke();
+        break;
+      }
+      case 'virus': {
+        c.strokeStyle = C.red; c.fillStyle = C.red; c.lineWidth = 3;
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          c.beginPath(); c.moveTo(Math.cos(a) * 11, Math.sin(a) * 11); c.lineTo(Math.cos(a) * 19, Math.sin(a) * 19); c.stroke();
+          c.beginPath(); c.arc(Math.cos(a) * 20, Math.sin(a) * 20, 3, 0, Math.PI * 2); c.fill();
+        }
+        c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2); c.fill();
+        c.fillStyle = C.redSoft;
+        c.beginPath(); c.arc(-4, -3, 3, 0, Math.PI * 2); c.arc(4, 4, 2.4, 0, Math.PI * 2); c.fill();
+        break;
+      }
+      case 'papers': {
+        c.lineWidth = 2.5;
+        c.save(); c.rotate(-0.35); roundRect(c, -15, -16, 24, 30, 3); c.fillStyle = C.surface2; c.fill(); c.strokeStyle = C.text3; c.stroke(); c.restore();
+        c.save(); c.rotate(0.3); roundRect(c, -8, -14, 24, 30, 3); c.fillStyle = C.surface; c.fill(); c.strokeStyle = C.red; c.stroke();
+        c.strokeStyle = C.redSoft; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(-3, -6); c.lineTo(11, -6); c.moveTo(-3, 0); c.lineTo(11, 0); c.moveTo(-3, 6); c.lineTo(6, 6); c.stroke();
+        c.restore();
+        break;
+      }
+    }
+    c.restore();
+  }
+
+  // Elo, exactly as in the app (EloBot.tsx + index.css .elo-bot-*).
+  function drawElo(c, x, y, size, mood, glow) {
+    const s = size / 64;
+    c.save();
+    c.translate(x - 32 * s, y - 64 * s);
+    c.scale(s, s);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // soft floor shadow
+    c.fillStyle = 'rgba(24, 36, 58, 0.10)';
+    c.beginPath(); c.ellipse(32, 61, 18, 3, 0, 0, Math.PI * 2); c.fill();
+    if (glow) { c.shadowColor = C.teal; c.shadowBlur = 16; }
+    c.strokeStyle = C.accent; c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(32, 6); c.lineTo(32, 14); c.stroke();
+    c.fillStyle = glow ? C.teal : C.accent;
+    c.beginPath(); c.arc(32, 5, 3, 0, Math.PI * 2); c.fill();
+    const wave = mood === 'happy' ? -6 : 0;
+    c.beginPath(); c.moveTo(20, 50); c.lineTo(13, 56 + wave); c.stroke();
+    c.beginPath(); c.moveTo(44, 50); c.lineTo(51, 56 + wave); c.stroke();
+    c.fillStyle = C.accent; roundRect(c, 20, 46, 24, 12, 6); c.fill();
+    c.fillStyle = C.surface; roundRect(c, 12, 14, 40, 30, 12); c.fill(); c.stroke();
+    c.shadowBlur = 0;
+    c.fillStyle = C.soft; roundRect(c, 17, 20, 30, 16, 8); c.fill();
+    c.strokeStyle = C.accent; c.fillStyle = C.accent; c.lineWidth = 2.4;
+    if (mood === 'happy') {
+      for (const cx of [25, 39]) { c.beginPath(); c.moveTo(cx - 3, 29); c.quadraticCurveTo(cx, 25, cx + 3, 29); c.stroke(); }
+    } else if (mood === 'dizzy') {
+      for (const cx of [25, 39]) { c.beginPath(); c.moveTo(cx - 3, 25); c.lineTo(cx + 3, 31); c.moveTo(cx + 3, 25); c.lineTo(cx - 3, 31); c.stroke(); }
+    } else if (mood === 'blink') {
+      c.beginPath(); c.moveTo(22, 28); c.lineTo(28, 28); c.moveTo(36, 28); c.lineTo(42, 28); c.stroke();
+    } else {
+      c.beginPath(); c.arc(25, 28, 3, 0, Math.PI * 2); c.arc(39, 28, 3, 0, Math.PI * 2); c.fill();
+    }
+    c.beginPath();
+    if (mood === 'dizzy') { c.moveTo(27, 41); c.quadraticCurveTo(32, 38, 37, 41); }
+    else { c.moveTo(27, 40); c.quadraticCurveTo(32, 43, 37, 40); }
+    c.stroke();
+    c.restore();
+  }
+
+  // ── Layout ──────────────────────────────────────────────────────────────────
+  const elo = { x: 0, y: 0, targetX: null, bounce: 0, dizzy: 0, happy: 0 };
+  let W = 0, H = 0, unit = 1;
+  const eloHalf = () => 44 * unit;
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    unit = Math.max(0.75, Math.min(W, H) / 680);
+    elo.y = H - 46 * unit;
+    elo.x = Math.min(Math.max(elo.x || W / 2, eloHalf()), W - eloHalf());
+  };
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let state = 'start';
+  let items = [], floaters = [], sparks = [];
+  let score = 0, streak = 0, bonusLeft = 0, timeLeft = GAME_SECONDS, spawnIn = 0, lastTime = 0;
+  const keys = { left: false, right: false };
+
+  function pickItem() {
+    let roll = Math.random() * TOTAL_WEIGHT;
+    for (const item of ITEMS) { if ((roll -= item.weight) <= 0) return item; }
+    return ITEMS[0];
+  }
+  const difficulty = () => Math.min(1, (GAME_SECONDS - timeLeft) / GAME_SECONDS);
+
+  function spawn() {
+    const type = pickItem();
+    const size = 58 * unit;
+    items.push({
+      ...type,
+      x: size + Math.random() * (W - size * 2),
+      y: -size,
+      size,
+      // Brisk from the first second: the stand has a queue.
+      speed: (290 + 250 * difficulty() + Math.random() * 70) * unit,
+      spin: (Math.random() - 0.5) * 1.2,
+      angle: 0,
+    });
+  }
+
+  function start() {
+    $('start').classList.remove('on'); $('end').classList.remove('on'); $('admin').classList.remove('on');
+    hud.hidden = false;
+    items = []; floaters = []; sparks = [];
+    score = 0; streak = 0; bonusLeft = 0; timeLeft = GAME_SECONDS; spawnIn = 0.2;
+    elo.dizzy = 0; elo.happy = 0; elo.x = W / 2; elo.targetX = null;
+    state = 'play';
+    blip(660, 0.1, 'triangle');
+    updateHud();
+  }
+
+  let savedThisGame = false;
+  function finish() {
+    state = 'end';
+    hud.hidden = true;
+    const won = score >= goal;
+    $('endTitle').textContent = won ? '¡Lo lograste!' : 'Se acabó el tiempo';
+    $('endScore').textContent = score;
+    $('endPrize').innerHTML = won
+      ? '<div class="win">¡Ganaste una galleta! 🍪<small>Pasa por el stand de Elosar</small></div>'
+      : `<div class="near">Te faltaron <b>${goal - score}</b> puntos para la galleta. ¡Inténtalo otra vez!</div>`;
+    $('nick').value = '';
+    savedThisGame = false;
+    $('nickForm').hidden = score <= 0;
+    renderBoard($('boardEnd'));
+    $('end').classList.add('on');
+    if (won) [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => blip(f, 0.16, 'triangle', 0.09), i * 120));
+    else blip(220, 0.25, 'sine', 0.06);
+  }
+
+  function updateHud() {
+    $('hudScore').textContent = score;
+    $('hudTime').textContent = Math.ceil(timeLeft);
+    $('hudCombo').hidden = bonusLeft <= 0;
+  }
+
+  // ── Loop ────────────────────────────────────────────────────────────────────
+  function tick(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000 || 0);
+    lastTime = now;
+    if (state === 'play') update(dt);
+    draw(now / 1000);
+    requestAnimationFrame(tick);
+  }
+
+  function update(dt) {
+    timeLeft -= dt;
+    if (timeLeft <= 0) { timeLeft = 0; updateHud(); finish(); return; }
+
+    const speed = 640 * unit;
+    if (elo.dizzy > 0) elo.dizzy -= dt;
+    const slow = elo.dizzy > 0 ? 0.45 : 1;
+    if (keys.left) elo.x -= speed * slow * dt;
+    if (keys.right) elo.x += speed * slow * dt;
+    if (!keys.left && !keys.right && elo.targetX !== null) {
+      elo.x += (elo.targetX - elo.x) * Math.min(1, dt * 14 * slow);
+    }
+    elo.x = Math.min(Math.max(elo.x, eloHalf()), W - eloHalf());
+    elo.bounce = Math.max(0, elo.bounce - dt * 4);
+    elo.happy = Math.max(0, elo.happy - dt);
+    bonusLeft = Math.max(0, bonusLeft - dt);
+
+    spawnIn -= dt;
+    if (spawnIn <= 0) {
+      spawn();
+      spawnIn = (0.5 - 0.25 * difficulty()) * (0.7 + Math.random() * 0.6);
+    }
+
+    const catchTop = elo.y - 90 * unit, catchBottom = elo.y;
+    for (const it of items) {
+      it.y += it.speed * dt;
+      it.angle += it.spin * dt;
+      const close = Math.abs(it.x - elo.x) < eloHalf() + it.size * 0.3;
+      if (!it.done && close && it.y + it.size * 0.4 > catchTop && it.y < catchBottom) {
+        it.done = true;
+        collect(it);
+      }
+    }
+    items = items.filter((it) => !it.done && it.y < H + it.size);
+
+    for (const f of floaters) { f.y -= 60 * unit * dt; f.life -= dt; }
+    floaters = floaters.filter((f) => f.life > 0);
+    for (const p of sparks) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 300 * dt; p.life -= dt; }
+    sparks = sparks.filter((p) => p.life > 0);
+
+    updateHud();
+  }
+
+  function collect(it) {
+    if (it.good) {
+      streak += 1;
+      if (streak >= STREAK_FOR_BONUS && bonusLeft <= 0) {
+        bonusLeft = BONUS_SECONDS; streak = 0;
+        floaters.push({ x: elo.x, y: elo.y - 130 * unit, text: 'Racha ×2', color: C.accent700, life: 1.2 });
+        blip(988, 0.12, 'triangle', 0.06);
+      }
+      const gained = it.points * (bonusLeft > 0 ? 2 : 1);
+      score += gained;
+      elo.bounce = 1; elo.happy = 0.35;
+      floaters.push({ x: it.x, y: it.y, text: `+${gained}`, color: C.green, life: 0.8 });
+      burst(it.x, it.y, it.kind === 'star' ? C.gold : C.teal, it.kind === 'star' ? 18 : 8);
+      blip(it.kind === 'star' ? 1046 : 520 + it.points * 4, 0.07, 'triangle');
+    } else {
+      streak = 0;
+      score = Math.max(0, score + it.points);
+      elo.dizzy = 0.7;
+      floaters.push({ x: it.x, y: it.y, text: `${it.points}`, color: C.red, life: 0.8 });
+      burst(it.x, it.y, C.red, 8);
+      blip(170, 0.18, 'sine', 0.07);
+    }
+  }
+
+  function burst(x, y, color, count) {
+    if (reducedMotion) return;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, v = (80 + Math.random() * 160) * unit;
+      sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 80 * unit, life: 0.5 + Math.random() * 0.3, color });
+    }
+  }
+
+  // ── Draw ────────────────────────────────────────────────────────────────────
+  function draw(t) {
+    // Light, airy canvas: the app's background with a whisper of the brand gradient.
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const glowA = ctx.createRadialGradient(W * 0.12, H * 0.05, 0, W * 0.12, H * 0.05, Math.max(W, H) * 0.6);
+    glowA.addColorStop(0, 'rgba(83, 201, 192, 0.16)'); glowA.addColorStop(1, 'rgba(83, 201, 192, 0)');
+    ctx.fillStyle = glowA; ctx.fillRect(0, 0, W, H);
+    const glowB = ctx.createRadialGradient(W * 0.9, H * 0.2, 0, W * 0.9, H * 0.2, Math.max(W, H) * 0.55);
+    glowB.addColorStop(0, 'rgba(73, 111, 216, 0.14)'); glowB.addColorStop(1, 'rgba(73, 111, 216, 0)');
+    ctx.fillStyle = glowB; ctx.fillRect(0, 0, W, H);
+    // dotted grid, like squared paper on a clinic desk
+    ctx.fillStyle = 'rgba(128, 149, 192, 0.18)';
+    const step = 28 * unit;
+    for (let gx = step / 2; gx < W; gx += step) for (let gy = step / 2; gy < H; gy += step) ctx.fillRect(gx, gy, 1.4, 1.4);
+    // floor
+    ctx.fillStyle = C.surface; ctx.fillRect(0, H - 22 * unit, W, 22 * unit);
+    ctx.fillStyle = C.divider; ctx.fillRect(0, H - 22 * unit, W, 1);
+
+    for (const it of items) {
+      ctx.save();
+      ctx.translate(it.x, it.y);
+      ctx.shadowColor = 'rgba(24, 36, 58, 0.14)'; ctx.shadowBlur = 10 * unit; ctx.shadowOffsetY = 3 * unit;
+      if (!reducedMotion) ctx.rotate(Math.sin(it.angle) * 0.25);
+      drawItem(ctx, it.kind, it.size);
+      ctx.restore();
+    }
+
+    const blinking = Math.sin(t * 1.7) > 0.985;
+    const mood = elo.dizzy > 0 ? 'dizzy' : elo.happy > 0 ? 'happy' : blinking ? 'blink' : 'idle';
+    const hop = reducedMotion ? 0 : Math.sin(elo.bounce * Math.PI) * 14 * unit;
+    const wobble = elo.dizzy > 0 && !reducedMotion ? Math.sin(t * 40) * 4 * unit : 0;
+    if (state !== 'start') drawElo(ctx, elo.x + wobble, elo.y - hop, 108 * unit, mood, bonusLeft > 0);
+
+    for (const p of sparks) { ctx.globalAlpha = Math.max(0, p.life * 1.6); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2.6 * unit, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `800 ${26 * unit}px Inter, system-ui, sans-serif`;
+    for (const f of floaters) {
+      ctx.globalAlpha = Math.min(1, f.life * 1.5);
+      ctx.lineWidth = 5 * unit; ctx.strokeStyle = C.surface; ctx.strokeText(f.text, f.x, f.y);
+      ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── Legend (same icons as the game) ───────────────────────────────────────
+  for (const it of ITEMS) {
+    const row = document.createElement('div');
+    row.className = `legend-item ${it.good ? 'good' : 'bad'}`;
+    const icon = document.createElement('canvas');
+    icon.width = 60; icon.height = 60;
+    const ic = icon.getContext('2d');
+    ic.translate(30, 30); drawItem(ic, it.kind, 56);
+    const name = document.createElement('span'); name.textContent = it.label;
+    const pts = document.createElement('em'); pts.textContent = it.points > 0 ? `+${it.points}` : `${it.points}`;
+    row.append(icon, name, pts);
+    $('legend').append(row);
+  }
+
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+  let lastSaved = null;
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function renderBoard(table) {
+    const rows = loadBoard();
+    if (!rows.length) { table.innerHTML = ''; return; }
+    table.innerHTML = '<caption>Récords de hoy</caption>' + rows.slice(0, 10).map((r, i) =>
+      `<tr class="${r.id === lastSaved ? 'me' : ''}"><td>${i + 1}</td><td>${escapeHtml(r.nick)}</td><td>${r.score}</td></tr>`).join('');
+  }
+  $('nickForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (savedThisGame) return; // one entry per game, even on a double tap
+    savedThisGame = true;
+    const nick = $('nick').value.trim().slice(0, 14) || 'Anónimo';
+    lastSaved = Date.now();
+    saveBoard([...loadBoard(), { id: lastSaved, nick, score }].sort((a, b) => b.score - a.score).slice(0, 10));
+    $('nickForm').hidden = true;
+    renderBoard($('boardEnd'));
+  });
+
+  // ── Stand mode: Ctrl+Shift+E, or five taps on the score ───────────────────
+  const updateGoal = () => {
+    $('goalLabel').textContent = `${goal} puntos`;
+    document.querySelectorAll('#goalButtons button').forEach((b) => b.classList.toggle('on', Number(b.dataset.goal) === goal));
+  };
+  for (const g of GOAL_OPTIONS) {
+    const b = document.createElement('button');
+    b.textContent = g; b.dataset.goal = g;
+    b.addEventListener('click', () => { goal = g; store.set('goal2', goal); updateGoal(); });
+    $('goalButtons').append(b);
+  }
+  let taps = 0, tapTimer = null;
+  const toggleAdmin = () => $('admin').classList.toggle('on');
+  $('endScore').addEventListener('click', () => {
+    taps += 1; clearTimeout(tapTimer); tapTimer = setTimeout(() => { taps = 0; }, 1200);
+    if (taps >= 5) { taps = 0; toggleAdmin(); }
+  });
+  $('clearBoard').addEventListener('click', () => {
+    if (confirm('¿Borrar todos los récords de hoy?')) { saveBoard([]); renderBoard($('boardEnd')); renderBoard($('boardStart')); }
+  });
+
+  // ── Input ───────────────────────────────────────────────────────────────────
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) { toggleAdmin(); return; }
+    if (e.target instanceof HTMLInputElement) return;
+    // Keys win over the pointer: steering with the arrows never glides back to the mouse.
+    if (['ArrowLeft', 'a', 'A'].includes(e.key)) { keys.left = true; elo.targetX = null; }
+    if (['ArrowRight', 'd', 'D'].includes(e.key)) { keys.right = true; elo.targetX = null; }
+    if ((e.key === 'Enter' || e.key === ' ') && state === 'start') { e.preventDefault(); start(); }
+    if (state === 'play' && ['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+  });
+  window.addEventListener('keyup', (e) => {
+    if (['ArrowLeft', 'a', 'A'].includes(e.key)) keys.left = false;
+    if (['ArrowRight', 'd', 'D'].includes(e.key)) keys.right = false;
+  });
+  const point = (e) => { if (state === 'play') elo.targetX = e.clientX; };
+  canvas.addEventListener('pointerdown', point);
+  canvas.addEventListener('pointermove', point);
+  $('play').addEventListener('click', start);
+  $('again').addEventListener('click', start);
+
+  // ── Boot ────────────────────────────────────────────────────────────────────
+  window.addEventListener('resize', resize);
+  resize();
+  updateGoal();
+  renderBoard($('boardStart'));
+  const startCtx = $('startElo').getContext('2d');
+  (function wave(t) {
+    if (state !== 'start') return;
+    startCtx.clearRect(0, 0, 96, 96);
+    drawElo(startCtx, 48, 92, 88, !reducedMotion && Math.sin(t / 400) > 0.3 ? 'happy' : 'idle', false);
+    requestAnimationFrame(wave);
+  })(0);
+  requestAnimationFrame((t) => { lastTime = t; requestAnimationFrame(tick); });
+})();
+</script>
+</body>
+</html>

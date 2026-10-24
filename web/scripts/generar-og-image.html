@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Generar og-image de Elosar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        gap: 20px;
+        background: #0b1211;
+        color: #d7e3df;
+        font: 15px/1.6 Inter, system-ui, sans-serif;
+        padding: 30px;
+      }
+      canvas {
+        width: 600px;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+      }
+      button {
+        font: 600 15px Inter, system-ui, sans-serif;
+        background: #0f766e;
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 13px 22px;
+        cursor: pointer;
+      }
+      p { max-width: 620px; text-align: center; color: #8ba39c; }
+      code { color: #5eead4; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Genera la imagen que WhatsApp / Facebook / X muestran al compartir
+      https://elosar.site.
+
+      Cómo usarlo:
+        1. Abre este archivo en el navegador (doble clic).
+        2. Pulsa "Descargar og-image.jpg".
+        3. Mueve el archivo descargado a  medico-web/public/og-image.jpg
+
+      Se dibuja con canvas para que la imagen quede versionada como CÓDIGO: si
+      cambia la marca, se edita aquí y se vuelve a generar, sin depender de
+      ningún programa de diseño. JPEG (no PNG) porque el degradado del fondo
+      pesa ~840 KB en PNG y solo ~37 KB en JPEG — WhatsApp descarta imágenes
+      grandes.
+    -->
+    <canvas id="c" width="1200" height="630"></canvas>
+    <button id="dl">Descargar og-image.jpg</button>
+    <p>
+      Guárdalo en <code>medico-web/public/og-image.jpg</code>. Medidas 1200×630,
+      las que piden Open Graph y WhatsApp.
+    </p>
+
+    <script>
+      const W = 1200;
+      const H = 630;
+
+      function draw(x, logo) {
+        // Fondo: degradado de la marca.
+        const g = x.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, '#0f766e');
+        g.addColorStop(1, '#0b3b38');
+        x.fillStyle = g;
+        x.fillRect(0, 0, W, H);
+
+        // Halo suave arriba a la derecha.
+        const rg = x.createRadialGradient(W * 0.82, H * 0.18, 0, W * 0.82, H * 0.18, 520);
+        rg.addColorStop(0, 'rgba(94,234,212,0.30)');
+        rg.addColorStop(1, 'rgba(94,234,212,0)');
+        x.fillStyle = rg;
+        x.fillRect(0, 0, W, H);
+
+        // Marca: el logo Elosar (public/brand-logo.png, full-color sobre
+        // transparente), siempre desnudo; no se encierra en una caja o chip.
+        if (logo) {
+          const cX = 96, cY = 46, avail = 174;
+          const s = Math.min(avail / logo.width, avail / logo.height);
+          const lw = logo.width * s, lh = logo.height * s;
+          x.drawImage(logo, cX + (avail - lw) / 2, cY + (avail - lh) / 2, lw, lh);
+        }
+
+        x.fillStyle = '#ffffff';
+        x.font = '700 104px Inter, system-ui, sans-serif';
+        x.fillText('Elosar', 96, 372);
+
+        x.fillStyle = 'rgba(255,255,255,0.92)';
+        x.font = '600 40px Inter, system-ui, sans-serif';
+        x.fillText('Tu consultorio o clínica en un solo lugar', 96, 446);
+
+        x.fillStyle = 'rgba(255,255,255,0.68)';
+        x.font = '400 29px Inter, system-ui, sans-serif';
+        x.fillText('Agenda · Historia clínica · Recetas · Facturación SRI', 96, 508);
+
+        x.fillStyle = '#5eead4';
+        x.fillRect(96, 556, 62, 5);
+        x.fillStyle = 'rgba(255,255,255,0.6)';
+        x.font = '600 24px Inter, system-ui, sans-serif';
+        x.fillText('Ecuador', 96, 600);
+      }
+
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d');
+
+      // Esperar fuentes + logo; si no, el texto/marca salen con reserva.
+      const logo = new Image();
+      logo.src = '../public/brand-logo.png';
+      Promise.all([
+        document.fonts.ready,
+        logo.decode().catch(() => null),
+      ]).then(() => draw(ctx, logo.complete ? logo : null));
+
+      document.getElementById('dl').addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.download = 'og-image.jpg';
+        a.href = canvas.toDataURL('image/jpeg', 0.86);
+        a.click();
+      });
+    </script>
+  </body>
+</html>

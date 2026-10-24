@@ -1,0 +1,41 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.codex
+/.cursor/
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Local-only docs & branding scratch (not part of the app/deploy)
+/documentacion
+/elosar_logo.png
+/logo_op1_ojo.png
+/logo_op2_hojas.png
+
+# Accesos/credenciales locales (no versionar)
+/docs/accesos.md
+
+# Comprobantes SRI reales generados en pruebas: llevan RUC, nombre, direccion
+# y certificado de una persona fisica. Nunca se versionan.
+/docs/sri/*-firmada.xml
+/sri_sample_dump.php
