@@ -82,5 +82,6 @@ cd web && npx vitest run                       # Vitest + Testing Library (~490 
 Mathias Yupa Panchi. Desarrollado con apoyo de asistentes de programación con IA; las
 decisiones de producto y arquitectura son del autor.
 
-© 2026 Mathias Yupa Panchi. Todos los derechos reservados. El código se publica para su
-revisión; no se concede licencia de uso, copia ni distribución.
+© 2026 Mathias Yupa Panchi. **Todos los derechos reservados.** Este código es visible solo
+para la evaluación del concurso: **no es código abierto** y no se permite copiarlo, usarlo,
+modificarlo ni distribuirlo sin autorización escrita. Condiciones completas en [LICENSE](LICENSE).
